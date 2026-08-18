@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 
@@ -39,16 +39,32 @@ class CalibrationSettings:
 
 @dataclass(frozen=True)
 class CalibrationReport:
+    """Calibration outcome.
+
+    `beats_barcode` reports whether RFID outperforms the barcode baseline on the
+    direct comparison metrics. `meets_targets` reports whether RFID also satisfies
+    the configured calibration thresholds. These are related but intentionally
+    independent assessments.
+    """
+
     current_power_dbm: int
     recommended_power_dbm: int
     range_advantage_m: float
     latency_ratio: float
     beats_barcode: bool
     meets_targets: bool
-    issues: list[str] = field(default_factory=list)
+    issues: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {
+            "current_power_dbm": self.current_power_dbm,
+            "recommended_power_dbm": self.recommended_power_dbm,
+            "range_advantage_m": self.range_advantage_m,
+            "latency_ratio": self.latency_ratio,
+            "beats_barcode": self.beats_barcode,
+            "meets_targets": self.meets_targets,
+            "issues": self.issues,
+        }
 
 
 def evaluate_t2uhf_calibration(
@@ -71,30 +87,37 @@ def evaluate_t2uhf_calibration(
     issues: list[str] = []
     range_advantage_m = round(rfid_metrics.range_meters - barcode_metrics.range_meters, 3)
     latency_ratio = round(rfid_metrics.latency_ms / barcode_metrics.latency_ms, 3)
+    has_accuracy_issue = rfid_metrics.accuracy < settings.target_accuracy
+    has_stability_issue = rfid_metrics.stability < settings.target_stability
+    has_range_issue = range_advantage_m < settings.minimum_range_advantage_m
+    has_latency_issue = latency_ratio > settings.maximum_latency_ratio
 
-    if rfid_metrics.accuracy < settings.target_accuracy:
+    if has_accuracy_issue:
         issues.append("RFID accuracy is below target")
-    if rfid_metrics.stability < settings.target_stability:
+    if has_stability_issue:
         issues.append("RFID stability is below target")
-    if range_advantage_m < settings.minimum_range_advantage_m:
+    if has_range_issue:
         issues.append("RFID range does not exceed barcode range by the required margin")
-    if latency_ratio > settings.maximum_latency_ratio:
+    if has_latency_issue:
         issues.append("RFID latency is too high compared with barcode scanning")
+    has_conflicting_signals = has_latency_issue and (
+        has_accuracy_issue or has_stability_issue or has_range_issue
+    )
+
+    if has_conflicting_signals:
+        issues.append("RFID calibration has conflicting power and latency signals")
 
     recommended_power_dbm = current_power_dbm
-    if any(
-        message in issues
-        for message in (
-            "RFID accuracy is below target",
-            "RFID stability is below target",
-            "RFID range does not exceed barcode range by the required margin",
-        )
-    ):
+    if not has_conflicting_signals and (has_accuracy_issue or has_stability_issue or has_range_issue):
         recommended_power_dbm = min(settings.max_power_dbm, current_power_dbm + settings.power_step_dbm)
-    elif latency_ratio > settings.maximum_latency_ratio:
+    elif not has_conflicting_signals and has_latency_issue:
         recommended_power_dbm = max(settings.min_power_dbm, current_power_dbm - settings.power_step_dbm)
 
-    beats_barcode = range_advantage_m > 0 and rfid_metrics.accuracy >= barcode_metrics.accuracy
+    beats_barcode = (
+        range_advantage_m >= settings.minimum_range_advantage_m
+        and rfid_metrics.accuracy >= barcode_metrics.accuracy
+        and rfid_metrics.stability >= barcode_metrics.stability
+    )
     meets_targets = not issues
 
     return CalibrationReport(
@@ -104,5 +127,5 @@ def evaluate_t2uhf_calibration(
         latency_ratio=latency_ratio,
         beats_barcode=beats_barcode,
         meets_targets=meets_targets,
-        issues=issues,
+        issues=tuple(issues),
     )
