@@ -1,0 +1,125 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: idata_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      POSTGRES_DB: ${POSTGRES_DB:-idata_dev}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-odoo} -d ${POSTGRES_DB:-idata_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - idata_network
+    restart: unless-stopped
+
+  odoo:
+    image: odoo:19.0
+    container_name: idata_odoo
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      HOST: ${POSTGRES_HOST:-postgres}
+      PORT: 5432
+      USER: ${POSTGRES_USER:-odoo}
+      PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      DB_NAME: ${ODOO_DB_NAME:-idata_dev}
+      ODOO_ADDONS_PATH: /mnt/backend
+      ODOO_MODULES: stock_barcode,stock_barcode_rfid
+      ADMIN_PASSWD: ${ODOO_ADMIN_PASSWD:-admin}
+      LOGFILE: /var/log/odoo/odoo.log
+    volumes:
+      # Mount custom modules
+      - ./backend/stock_barcode_rfid:/mnt/backend/stock_barcode_rfid:rw
+      - ./backend/stock_barcode_rfid_calibration:/mnt/backend/stock_barcode_rfid_calibration:rw
+      # Data persistence
+      - odoo_data:/var/lib/odoo
+      - ./logs/odoo:/var/log/odoo
+      # Config
+      - ./backend/odoo.conf:/etc/odoo/odoo.conf:ro
+    ports:
+      - "8069:8069"  # Odoo web
+      - "8072:8072"  # Odoo WebSocket
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - idata_network
+    restart: unless-stopped
+    command: odoo -c /etc/odoo/odoo.conf --dev=all
+
+  redis:
+    image: redis:7-alpine
+    container_name: idata_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - idata_network
+    restart: unless-stopped
+
+  # Optional: Celery worker for async processing (Phase 5+)
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.celery
+    container_name: idata_celery
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-odoo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-odoo}
+      POSTGRES_DB: ${ODOO_DB_NAME:-idata_dev}
+    volumes:
+      - ./backend:/app:rw
+      - ./logs/celery:/var/log/celery
+    networks:
+      - idata_network
+    restart: unless-stopped
+    profiles:
+      - async  # Enable with: docker-compose --profile async up
+
+  # Optional: Mailhog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: idata_mailhog
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    networks:
+      - idata_network
+    restart: unless-stopped
+    profiles:
+      - mail
+
+volumes:
+  postgres_data:
+  odoo_data:
+  redis_data:
+
+networks:
+  idata_network:
+    driver: bridge

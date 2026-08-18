@@ -1,0 +1,47 @@
+# IDataProject Backend Requirements
+# Odoo 19.0 development dependencies
+
+# Core Odoo
+odoo>=19.0,<20.0
+
+# Testing
+pytest>=7.0
+pytest-cov>=4.0
+pytest-django>=4.5
+factory-boy>=3.2
+
+# Code Quality
+black>=23.0
+flake8>=6.0
+flake8-docstrings>=1.7
+isort>=5.12
+mypy>=1.0
+pylint>=2.17
+
+# Security
+bandit>=1.7
+safety>=2.3
+
+# HTTP & API
+requests>=2.28
+requests-mock>=1.9
+
+# Database
+psycopg2-binary>=2.9
+
+# Utilities
+python-dotenv>=1.0
+pydantic>=2.0
+pytz>=2023.3
+
+# Async/Celery (Phase 5+)
+celery>=5.3
+redis>=4.5
+
+# Logging
+structlog>=23.1
+python-json-logger>=2.0
+
+# Development
+ipdb>=0.13
+ipython>=8.0

@@ -1,0 +1,74 @@
+# Environment variables (NEVER commit actual secrets)
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Backend (Odoo/Python)
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/venv/
+backend/.venv/
+backend/env/
+backend/pip-log.txt
+backend/pip-delete-this-directory.txt
+backend/.coverage
+backend/htmlcov/
+backend/site/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.dmypy.json
+backend/dmypy.json
+backend/dist/
+backend/build/
+backend/*.egg-info/
+backend/bandit-report.json
+backend/odoo.log
+
+# Android
+android/.gradle/
+android/local.properties
+android/build/
+android/.cxx/
+android/*.apk
+android/*.aar
+android/.kotlin/
+android/captures/
+android/androidStudioPreferences.xml
+android/gradlew.bat
+android/.idea/
+android/*.iml
+android/.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Testing
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+dist/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Secrets (scanning tools)
+.truffleHog/
+.secrets.baseline
