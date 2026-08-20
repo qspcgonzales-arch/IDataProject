@@ -1,0 +1,97 @@
+name: Roadmap Tracking Validation
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'ROADMAP_12WEEK_REALISTIC.md'
+      - 'TRACKER_12WEEK.csv'
+      - 'MILESTONES_CRITICAL_PATH.md'
+      - 'GATES_AND_CHECKPOINTS.md'
+      - 'CONTINGENCY_AND_ROLLBACK.md'
+      - '.github/workflows/roadmap-tracking.yml'
+  push:
+    branches: [main, develop, feature/*, fix/*]
+    paths:
+      - 'ROADMAP_12WEEK_REALISTIC.md'
+      - 'TRACKER_12WEEK.csv'
+      - 'MILESTONES_CRITICAL_PATH.md'
+      - 'GATES_AND_CHECKPOINTS.md'
+      - 'CONTINGENCY_AND_ROLLBACK.md'
+      - '.github/workflows/roadmap-tracking.yml'
+
+jobs:
+  validate-roadmap-tracker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate tracker and gate files
+        run: |
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+
+          root = Path('.')
+
+          required_files = [
+              root / 'ROADMAP_12WEEK_REALISTIC.md',
+              root / 'TRACKER_12WEEK.csv',
+              root / 'MILESTONES_CRITICAL_PATH.md',
+              root / 'GATES_AND_CHECKPOINTS.md',
+              root / 'CONTINGENCY_AND_ROLLBACK.md',
+          ]
+          missing = [str(p) for p in required_files if not p.exists()]
+          if missing:
+              raise SystemExit(f"Missing required roadmap files: {missing}")
+
+          required_columns = [
+              'Task ID',
+              'Phase',
+              'Week Window',
+              'Role',
+              'Task',
+              'Dependency',
+              'Estimated Effort (Dev-Days)',
+              'Risk Flag',
+              'Risk Mitigation Action',
+              'Owner/Assignee',
+              'Status',
+          ]
+
+          with open(root / 'TRACKER_12WEEK.csv', newline='', encoding='utf-8') as f:
+              reader = csv.DictReader(f)
+              if reader.fieldnames != required_columns:
+                  raise SystemExit(
+                      f"TRACKER_12WEEK.csv header mismatch. Expected: {required_columns}; got: {reader.fieldnames}"
+                  )
+
+              rows = list(reader)
+              if not rows:
+                  raise SystemExit('TRACKER_12WEEK.csv must contain at least one task row')
+
+              for i, row in enumerate(rows, start=2):
+                  if not row['Task ID'].strip() or not row['Owner/Assignee'].strip() or not row['Dependency'].strip():
+                      raise SystemExit(f"Row {i} missing required Task ID/Owner/Dependency field")
+
+          gates_text = (root / 'GATES_AND_CHECKPOINTS.md').read_text(encoding='utf-8')
+          required_gates = [
+              'Gate 0.5 — Aug 22, 2026',
+              'Gate 1.5 — Sep 3, 2026',
+              'Gate 2.5 — Sep 10, 2026',
+              'Gate 3.5 — Sep 24, 2026',
+              'Gate 4.5 — Oct 8, 2026',
+              'Gate 5 — Oct 20, 2026',
+              'Gate 6 — Oct 28, 2026',
+          ]
+          for gate in required_gates:
+              if gate not in gates_text:
+                  raise SystemExit(f"Missing gate checkpoint: {gate}")
+
+          print('Roadmap tracking validation passed.')
+          PY

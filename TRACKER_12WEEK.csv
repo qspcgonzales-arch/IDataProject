@@ -1,0 +1,34 @@
+Task ID,Phase,Week Window,Role,Task,Dependency,Estimated Effort (Dev-Days),Risk Flag,Risk Mitigation Action,Owner/Assignee,Status
+P0.1,Phase 0,W0 (Aug 19-Aug 22),Android Dev,Import iData T1UHF SDK and run emulator smoke test,Phase 0.0 depends on Project kickoff complete,1.0,HIGH,Escalate to vendor support within 4 hours if SDK load fails,Android Lead,Planned
+P0.2,Phase 0,W0 (Aug 19-Aug 22),Android Dev,Run real-device SDK initialization and capture proof,Phase 0.2 depends on Phase 0.1,1.0,HIGH,Switch to known-good sample app to isolate integration defects,Android Lead,Planned
+P0.3,Phase 0,W0 (Aug 19-Aug 22),QA,Validate SDK read call on emulator and hardware with evidence pack,Phase 0.3 depends on Phase 0.2,0.5,MEDIUM,Use shared test checklist and screenshots for reproducibility,QA Lead,Planned
+P1.1,Phase 1,W1 (Aug 24-Aug 28),DevOps,Stand up Odoo test instance with PostgreSQL and Redis,Phase 1.1 depends on Phase 0.3,1.0,MEDIUM,Use docker-compose fallback profile and pin container tags,DevOps Lead,Planned
+P1.2,Phase 1,W1 (Aug 24-Aug 28),Backend Dev,Configure barcode nomenclature EPC mapping POC,Phase 1.2 depends on Phase 1.1,1.5,MEDIUM,Keep rollback XML export of prior nomenclature config,Backend Lead,Planned
+P1.3,Phase 1,W1 (Aug 24-Aug 28),Backend Dev,Scaffold stock_barcode_rfid module (models/controllers/security),Phase 1.3 depends on Phase 1.1,2.0,LOW,Follow existing module conventions to avoid load errors,Backend Lead,Planned
+P1.4,Phase 1,W1 (Aug 24-Aug 28),Android Dev,Scaffold Android app modules for scanner/network/ui,Phase 1.4 depends on Phase 0.2,1.5,LOW,Start from existing project template in repo,Android Lead,Planned
+P1.5,Phase 1,W2 (Aug 31-Sep 4),QA,Execute Gate 1.5 evidence check (instance + nomenclature + scaffold),Phase 1.5 depends on Phase 1.2 and Phase 1.3 and Phase 1.4,0.5,MEDIUM,Block progression until mandatory evidence uploaded,QA Lead,Planned
+P2.1,Phase 2,W2 (Aug 31-Sep 4),Backend Dev,Implement POST /stock_barcode_rfid/scan endpoint,Phase 2.1 depends on Phase 1.3,2.0,MEDIUM,Feature-flag endpoint until validation completes,Backend Lead,Planned
+P2.2,Phase 2,W2 (Aug 31-Sep 4),Backend Dev,Add EPC validation and server-side dedup logic,Phase 2.2 depends on Phase 2.1,1.5,MEDIUM,Add deterministic tests for duplicate burst windows,Backend Lead,Planned
+P2.3,Phase 2,W2 (Aug 31-Sep 4),Backend Dev,Add API key auth and audit log trail,Phase 2.3 depends on Phase 2.1,1.0,LOW,Reuse auth and logging patterns from SECURITY.md,Backend Lead,Planned
+P2.4,Phase 2,W3 (Sep 7-Sep 11),Android Dev,Build Android API client and manual send EPC screen,Phase 2.4 depends on Phase 2.1 and Phase 2.3,1.5,LOW,Use Retrofit integration tests before UI wiring,Android Lead,Planned
+P2.5,Phase 2,W3 (Sep 7-Sep 11),Backend Dev,Prove barcode event injection from RFID input path,Phase 2.5 depends on Phase 2.2 and Phase 2.4,2.0,HIGH,If fail by Sep 10 trigger custom barcode UI extension pivot,Backend Lead,Planned
+P2.6,Phase 2,W3 (Sep 7-Sep 11),QA,Execute Gate 2.5 verification suite,Phase 2.6 depends on Phase 2.5,0.5,HIGH,Require end-to-end video capture for go decision,QA Lead,Planned
+P3.1,Phase 3,W4 (Sep 14-Sep 18),Android Dev,Implement live inventory loop with iData reader controls,Phase 3.1 depends on Phase 2.6,2.5,HIGH,Keep fallback profile for conservative read settings,Android Lead,Planned
+P3.2,Phase 3,W4 (Sep 14-Sep 18),Android Dev,Implement batch/throttle and RSSI filter controls,Phase 3.2 depends on Phase 3.1,1.5,MEDIUM,Add toggles for rapid rollback of aggressive tuning,Android Lead,Planned
+P3.3,Phase 3,W5 (Sep 21-Sep 25),Backend Dev,Validate Odoo bridge under live RFID burst traffic,Phase 3.3 depends on Phase 3.1 and Phase 3.2,1.5,MEDIUM,Pre-create synthetic load scripts for repeatability,Backend Lead,Planned
+P3.4,Phase 3,W5 (Sep 21-Sep 25),QA,Run Gate 3.5 live hardware loop checklist,Phase 3.4 depends on Phase 3.3,0.5,HIGH,No pass without stable loop evidence in logs and UI,QA Lead,Planned
+P4.1,Phase 4,W6 (Sep 28-Oct 2),Android Dev,Implement offline SQLite queue and replay sync,Phase 4.1 depends on Phase 3.4,2.0,HIGH,Add queue size cap and replay retry policy,Android Lead,Planned
+P4.2,Phase 4,W6 (Sep 28-Oct 2),QA,Validate offline queue recovery scenarios,Phase 4.2 depends on Phase 4.1,1.0,MEDIUM,Run airplane-mode and forced-network-drop scenarios,QA Lead,Planned
+P4.3,Phase 4,W6 (Sep 28-Oct 2),Android Dev,Run calibration POC baseline + power/session sweeps,Phase 4.3 depends on Phase 3.4,2.0,HIGH,Capture every sweep result in controlled worksheet,Android Lead,Planned
+P4.4,Phase 4,W7 (Oct 5-Oct 9),QA,Execute calibration accuracy validation >=98%,Phase 4.4 depends on Phase 4.3 and Phase 4.2,1.5,HIGH,Repeat trials if variance exceeds tolerance threshold,QA Lead,Planned
+P4.5,Phase 4,W7 (Oct 5-Oct 9),Backend Dev,Correlate RFID counts with Odoo audit records,Phase 4.5 depends on Phase 4.4,1.0,MEDIUM,Use reconciliation query pack before sign-off,Backend Lead,Planned
+P4.6,Phase 4,W7 (Oct 5-Oct 9),QA,Execute Gate 4.5 decision and evidence sign-off,Phase 4.6 depends on Phase 4.4 and Phase 4.5,0.5,HIGH,Do not advance if calibration score is below threshold,QA Lead,Planned
+P5.1,Phase 5,W8 (Oct 12-Oct 16),DevOps,Prepare pilot zone infrastructure and monitoring hooks,Phase 5.1 depends on Phase 4.6,1.5,MEDIUM,Use lab testbed fallback if zone readiness slips,DevOps Lead,Planned
+P5.2,Phase 5,W8 (Oct 12-Oct 16),QA,Run UAT script pack in pilot zone conditions,Phase 5.2 depends on Phase 5.1,2.0,HIGH,Maintain barcode fallback process for every UAT run,QA Lead,Planned
+P7.1,Phase 7,W9 (Oct 19-Oct 20),Backend Dev,Complete production readiness checklist and release notes,Phase 7.1 depends on Phase 5.2,1.0,MEDIUM,Require checklist sign-off by Ops and Engineering,Backend Lead,Planned
+P7.2,Phase 7,W9 (Oct 19-Oct 20),QA,Execute Gate 5 pilot readiness decision,Phase 7.2 depends on Phase 7.1,0.5,HIGH,Escalate unresolved sev-1 issues immediately,QA Lead,Planned
+P6.1,Phase 6,W10 (Oct 21-Oct 23),Android Dev,Run controlled pilot shadow operations,Phase 6.1 depends on Phase 7.2,1.5,MEDIUM,Track manual-vs-RFID deltas every cycle,Android Lead,Planned
+P6.2,Phase 6,W10 (Oct 21-Oct 23),Backend Dev,Monitor bridge stability and incident response during pilot,Phase 6.2 depends on Phase 6.1,1.0,MEDIUM,Keep rollback playbook active with on-call owner,Backend Lead,Planned
+P6.3,Phase 6,W11 (Oct 26-Oct 28),QA,Compile final evidence and issue go/no-go recommendation,Phase 6.3 depends on Phase 6.1 and Phase 6.2,1.0,HIGH,Require all gate waivers documented before go,QA Lead,Planned
+P6.4,Phase 6,W11 (Oct 26-Oct 28),DevOps,Finalize cutover/rollback readiness for sign-off,Phase 6.4 depends on Phase 6.3,0.5,MEDIUM,Run final rollback drill in lab before decision,DevOps Lead,Planned
+P6.5,Phase 6,W11 (Oct 26-Oct 28),Program Lead,Gate 6 final sign-off (Go/No-Go),Phase 6.5 depends on Phase 6.3 and Phase 6.4,0.5,HIGH,No-go if critical defects open or evidence incomplete,Program Manager,Planned
