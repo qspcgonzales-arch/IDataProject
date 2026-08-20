@@ -29,15 +29,15 @@ Risk mitigation playbook for the 12-week iData T1UHF + Odoo roadmap.
 
 ---
 
-## 3) If Calibration Accuracy Drops Below 95%
+## 3) If Calibration Accuracy Is Below 98%
 
-- **Trigger:** Calibration retests are <95% during Gate 4.5 prep/execution.
-- **Fallback:** Proceed with controlled pilot shadow-run and schedule live calibration refinement.
-- **Expected Impact:** Pilot proceeds with constrained scope and tighter monitoring.
+- **Trigger:** Calibration retests are <98% during Gate 4.5 prep/execution.
+- **Fallback:** Do not pass Gate 4.5; run calibration refinement cycle and re-test until threshold is met.
+- **Expected Impact:** Pilot launch is held until calibration evidence is compliant.
 - **Actions:**
   1. Lock conservative read profile.
   2. Add manual reconciliation checkpoints each cycle count.
-  3. Execute post-pilot calibration plan with production-like data.
+  3. If accuracy is <95%, run a **non-go-live shadow-run only** (waiver required) to collect field data while executing post-pilot calibration refinement.
 - **Rollback of Risk Posture:** Restore full automation mode only once target calibration confidence is re-established.
 
 ---

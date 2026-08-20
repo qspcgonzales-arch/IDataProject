@@ -47,12 +47,12 @@
 - **Entry:** Calibration and resilience tests passed.
 - **Exit:** Pilot zone prepared and UAT passed with evidence.
 
-## Phase 7 — Production Readiness Checklist (W9)
+## Phase 5B — Production Readiness Checklist (Requested “Phase 7” Gate) (W9)
 - **Entry:** UAT evidence complete.
 - **Exit:** Monitoring, rollback, operations checklist, and release readiness sign-offs completed before pilot launch.
 
 ## Phase 6 — Pilot + Final Decision (W10–W11)
-- **Entry:** Gate 5 pass (after Phase 7 readiness completion).
+- **Entry:** Gate 5 pass (after Phase 5B readiness completion).
 - **Exit:** Pilot run evidence reviewed and Gate 6 go/no-go signed.
 
 ## 3) Dependency Map (High-Level)
@@ -63,7 +63,7 @@
 4. Injection POC → 5. Live RFID hardware loop (Gate 3.5)  
 5. Live loop → 6. Calibration + offline queue validation (Gate 4.5)  
 6. Calibration/UAT → 7. Production readiness checklist (Gate 5)  
-7. Production readiness (Phase 7) → 8. Pilot sign-off (Gate 6)
+7. Production readiness (Phase 5B / requested Phase 7 gate) → 8. Pilot sign-off (Gate 6)
 
 ## 4) Go/No-Go Structure
 
