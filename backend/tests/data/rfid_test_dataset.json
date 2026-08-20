@@ -1,0 +1,39 @@
+{
+  "warehouse": {
+    "name": "RFID Test Warehouse",
+    "code": "RFID"
+  },
+  "operator": {
+    "name": "RFID Operator",
+    "login": "operator@test.local",
+    "email": "operator@test.local"
+  },
+  "products": [
+    { "name": "RFID Test Product 01", "default_code": "RFID-P-001", "barcode": "4800000000011" },
+    { "name": "RFID Test Product 02", "default_code": "RFID-P-002", "barcode": "4800000000028" },
+    { "name": "RFID Test Product 03", "default_code": "RFID-P-003", "barcode": "4800000000035" },
+    { "name": "RFID Test Product 04", "default_code": "RFID-P-004", "barcode": "4800000000042" },
+    { "name": "RFID Test Product 05", "default_code": "RFID-P-005", "barcode": "4800000000059" },
+    { "name": "RFID Test Product 06", "default_code": "RFID-P-006", "barcode": "4800000000066" },
+    { "name": "RFID Test Product 07", "default_code": "RFID-P-007", "barcode": "4800000000073" },
+    { "name": "RFID Test Product 08", "default_code": "RFID-P-008", "barcode": "4800000000080" },
+    { "name": "RFID Test Product 09", "default_code": "RFID-P-009", "barcode": "4800000000097" },
+    { "name": "RFID Test Product 10", "default_code": "RFID-P-010", "barcode": "4800000000103" }
+  ],
+  "epcs": [
+    { "epc": "300833B2DDD9014000000001", "lot_name": "LOT-2026-08-001" },
+    { "epc": "300833B2DDD9014000000002", "lot_name": "LOT-2026-08-002" },
+    { "epc": "300833B2DDD9014000000003", "lot_name": "LOT-2026-08-003" },
+    { "epc": "300833B2DDD9014000000004", "lot_name": "LOT-2026-08-004" },
+    { "epc": "300833B2DDD9014000000005", "lot_name": "LOT-2026-08-005" },
+    { "epc": "300833B2DDD9014000000006", "lot_name": "LOT-2026-08-006" },
+    { "epc": "300833B2DDD9014000000007", "lot_name": "LOT-2026-08-007" },
+    { "epc": "300833B2DDD9014000000008", "lot_name": "LOT-2026-08-008" },
+    { "epc": "300833B2DDD9014000000009", "lot_name": "LOT-2026-08-009" },
+    { "epc": "300833B2DDD901400000000A", "lot_name": "LOT-2026-08-010" }
+  ],
+  "inventory_session": {
+    "inventory_ref": "INV-RFID-2026-08-24-001",
+    "session_id": "rfid_session_aug24_001"
+  }
+}
