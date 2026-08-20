@@ -226,4 +226,4 @@ This phase determines whether the project succeeds. RFID is only better than bar
 - `CONTRIBUTING.md` — Contribution workflow and code review checklist
 - `IDataProject-Phase0-Decisions.md` — Phase 0 sign-off document
 - `docker-compose.yml` — Local development environment
-- Spider's RFID — RFID Odoo Integration Best Practices: https://www.spidersrfid.com/en/articles/rfid-odoo-integration-best-practices
+- [Spider's RFID — RFID Odoo Integration Best Practices](https://www.spidersrfid.com/en/articles/rfid-odoo-integration-best-practices) — Additional implementation guidance and integration best practices
