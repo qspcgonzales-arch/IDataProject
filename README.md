@@ -68,6 +68,7 @@ Start here based on your role:
 ### **For Everyone**
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — Understand the system design, data flows, and decisions (15 min read)
 - **[Phase 0 Decisions](IDataProject-Phase0-Decisions.md)** — What we've locked down (hardware, Odoo version, strategies)
+- **[12-Week Roadmap Package](ROADMAP_12WEEK_REALISTIC.md)** — Weekly execution plan, gates, critical path, tracker, and contingencies
 
 ### **For Backend Developers**
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** — Development environment setup, coding standards, testing
@@ -76,7 +77,7 @@ Start here based on your role:
 - **[backend/README.md](backend/README.md)** — Odoo module structure & conventions
 
 ### **For Android Developers**
-- **[android/README.md](android/README.md)** — Android dev environment, Zebra UHF SDK integration
+- **[android/README.md](android/README.md)** — Android dev environment and RFID SDK integration
 - **[API_CONTRACT.md](API_CONTRACT.md)** — API endpoints the Android app calls
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** — Testing strategy, Kotlin conventions
 
@@ -88,6 +89,9 @@ Start here based on your role:
 ### **For Troubleshooting**
 - **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** — Common issues & fixes
 
+### **External Reference**
+- **[Spider's RFID — Odoo Integration Best Practices](https://www.spidersrfid.com/en/articles/rfid-odoo-integration-best-practices)** — External article on RFID/Odoo integration patterns and deployment guidance
+
 ---
 
 ## Roadmap & Phases
@@ -96,16 +100,20 @@ The tracker sheet is the source of truth for execution status and dates. This ro
 
 | Window | Scope | Status |
 |---|---|---|
-| Aug 19-20 | Project setup, roadmap review, hardware verification | Complete |
-| Aug 24-28 | Odoo foundation, EPC mapping, Android scaffold, SDK integration | Planned |
-| Aug 31-Sep 10 | Odoo scan bridge, dedup, API auth, scan UI | Planned |
-| Sep 11-Sep 18 | Real RFID read loop, Android live count, live scan smoke tests | Planned |
-| Sep 21-Sep 30 | Offline handling, calibration, accuracy testing | Planned |
-| Oct 1-Oct 16 | Final calibration, E2E tests, pilot, UAT, go/no-go decision | Planned |
+| Aug 19-Aug 22 | Hardware validation gate (iData SDK functional on emulator + real device) | Planned/Complete by gate |
+| Aug 24-Sep 10 | Foundation + widened integration (Odoo scaffold, Android scaffold, scan bridge, injection POC) | Planned |
+| Sep 11-Sep 24 | Live RFID hardware loop hardening + gate confirmation | Planned |
+| Sep 28-Oct 8 | Calibration + offline queue validation + accuracy gate | Planned |
+| Oct 12-Oct 20 | Pilot readiness + UAT + production checklist gate | Planned |
+| Oct 21-Oct 28 | Pilot shadow-run + final go/no-go sign-off | Planned |
 
-**Current:** Preparation completed. The implementation sequence begins on Aug 24 and continues through the October pilot/UAT window.
+**Current:** 12-week plan is active from Aug 19 to Oct 28 with explicit go/no-go gates and contingency pivots.
 
-See [ROADMAP_UPDATED.md](ROADMAP_UPDATED.md) for the full date-based tracker-aligned roadmap.
+See [ROADMAP_12WEEK_REALISTIC.md](ROADMAP_12WEEK_REALISTIC.md) for the full weekly roadmap and decision gates.  
+Execution tracker: [TRACKER_12WEEK.csv](TRACKER_12WEEK.csv)  
+Gate details: [GATES_AND_CHECKPOINTS.md](GATES_AND_CHECKPOINTS.md)  
+Critical path: [MILESTONES_CRITICAL_PATH.md](MILESTONES_CRITICAL_PATH.md)  
+Contingencies: [CONTINGENCY_AND_ROLLBACK.md](CONTINGENCY_AND_ROLLBACK.md)
 
 ## Technology Stack
 
@@ -116,7 +124,7 @@ See [ROADMAP_UPDATED.md](ROADMAP_UPDATED.md) for the full date-based tracker-ali
 | Database | PostgreSQL | 15 |
 | Caching | Redis | 7 |
 | Mobile | Kotlin | 1.9+ |
-| Mobile SDK | Zebra UHF (DataWedge) | Latest |
+| Mobile SDK | iData T1UHF SDK | Latest |
 | Deployment | Docker & Compose | Latest |
 | CI/CD | GitHub Actions | — |
 
@@ -139,7 +147,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md#success-metrics) for details.
 - **EPC Mapping:** EPC → stock.lot.name via Barcode Nomenclature rule
 - **Encoding:** Hybrid (in-house + pre-encoded supplier tags)
 - **Workflow Priority:** Start with Inventory Adjustments (cycle counts)
-- **Hardware:** Zebra T1/T2 UHF handheld scanners + Zebra printer
+- **Hardware:** iData T1UHF RFID handheld scanner (primary focus product)
 - **Architecture:** Monorepo (backend + android in one repo, shared infrastructure)
 
 See [Phase 0 Decisions](IDataProject-Phase0-Decisions.md) for full rationale.
@@ -305,5 +313,5 @@ Apache 2.0 — See LICENSE file
 
 ---
 
-**Last Updated:** 2026-08-18  
-**Next Milestone:** Phase 1 (Odoo + Android "Hello World")
+**Last Updated:** 2026-08-20  
+**Next Milestone:** Gate 0.5 (iData SDK functional validation by Aug 22)
