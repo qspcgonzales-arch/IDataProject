@@ -92,21 +92,20 @@ Start here based on your role:
 
 ## Roadmap & Phases
 
-| Phase | Duration | Goal | Status |
-|-------|----------|------|--------|
-| **0** | Week 1 | Requirements locked | ✅ **COMPLETE** |
-| **1** | Week 1–2 | Odoo + Android "Hello World" | 🔲 Next |
-| **2** | Week 2–3 | Odoo RFID bridge module | 🔲 Pending |
-| **3** | Week 3–5 | Android scanner app with Zebra UHF | 🔲 Pending |
-| **4** | Week 5–6 | RFID calibration (power, session, RSSI) | 🔲 Pending |
-| **5** | Week 6–7 | Integration testing & E2E validation | 🔲 Pending |
-| **6** | Week 7–8 | Pilot/UAT in real warehouse zone | 🔲 Pending |
-| **7** | Week 8–10 | Production rollout (zone-by-zone) | 🔲 Pending |
-| **8** | Ongoing | Post-launch support & extensions | 🔲 Pending |
+The tracker sheet is the source of truth for execution status and dates. This roadmap reflects the current tracker schedule, not the earlier generic phase framework.
 
-**Current:** Phase 0 complete. Phase 1 readiness checklist pending.
+| Window | Scope | Status |
+|---|---|---|
+| Aug 19-20 | Project setup, roadmap review, hardware verification | Complete |
+| Aug 24-28 | Odoo foundation, EPC mapping, Android scaffold, SDK integration | Planned |
+| Aug 31-Sep 10 | Odoo scan bridge, dedup, API auth, scan UI | Planned |
+| Sep 11-Sep 18 | Real RFID read loop, Android live count, live scan smoke tests | Planned |
+| Sep 21-Sep 30 | Offline handling, calibration, accuracy testing | Planned |
+| Oct 1-Oct 16 | Final calibration, E2E tests, pilot, UAT, go/no-go decision | Planned |
 
----
+**Current:** Preparation completed. The implementation sequence begins on Aug 24 and continues through the October pilot/UAT window.
+
+See [ROADMAP_UPDATED.md](ROADMAP_UPDATED.md) for the full date-based tracker-aligned roadmap.
 
 ## Technology Stack
 
