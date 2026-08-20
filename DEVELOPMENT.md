@@ -47,9 +47,15 @@ IDataProject/
 │   │   ├── __manifest__.py
 │   │   ├── models/              # ORM models
 │   │   ├── controllers/         # HTTP endpoints
-│   │   ├── views/               # UI templates
-│   │   └── tests/               # Unit + integration tests
+│   │   └── views/               # UI templates
 │   ├── stock_barcode_rfid_calibration/  # Phase 4: calibration profiles
+│   ├── scripts/                 # Local DB/bootstrap scripts
+│   ├── tests/                   # Backend pytest suite + fixtures
+│   │   ├── conftest.py
+│   │   ├── test_epc_validation.py
+│   │   └── data/
+│   │       └── rfid_test_dataset.json
+│   ├── odoo.conf                # Odoo runtime config mounted by Docker
 │   └── requirements.txt          # Python dependencies (Odoo addons)
 ├── android/                     # Zebra T1/T2 scanner app
 │   ├── README.md                # Android setup guide
@@ -78,12 +84,8 @@ IDataProject/
 │   ├── CALIBRATION_GUIDE.md     # Phase 4 calibration procedure
 │   ├── DEPLOYMENT.md            # Production rollout checklist
 │   └── TROUBLESHOOTING.md       # Common issues + fixes
-└── tests/                       # E2E + integration test suite
-    ├── conftest.py              # Pytest fixtures (Odoo test data)
-    ├── test_rfid_bridge.py      # EPC → stock flow
-    ├── test_dedup.py            # Server-side dedup logic
-    └── fixtures/
-        └── test_data.py         # Sample EPCs, lots, users
+├── IDataProject-Phase0-Decisions.md  # Phase 0 decisions log
+└── ROADMAP_UPDATED.md           # Tracker-aligned roadmap (source of truth)
 ```
 
 ---
@@ -122,7 +124,7 @@ main              → Production-ready (post-pilot Phase 7)
 git checkout -b feature/epc-to-lot-mapping
 
 # Make changes in backend/stock_barcode_rfid/
-# Write tests in backend/stock_barcode_rfid/tests/
+# Write tests in backend/tests/
 
 # Run tests locally
 cd backend
@@ -356,7 +358,7 @@ python -m pytest tests/test_epc_validation.py -v
 
 **Integration tests** (with real DB):
 ```bash
-python -m pytest tests/test_rfid_bridge_e2e.py -v
+python -m pytest tests/ -m integration -v
 ```
 
 **Coverage requirement:** 80%+ for critical paths (dedup, EPC lookup)
