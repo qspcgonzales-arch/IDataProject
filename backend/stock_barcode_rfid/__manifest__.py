@@ -7,18 +7,20 @@
         stock_barcode_rfid - RFID Bridge Module
         ========================================
 
-        This module provides a bridge between Zebra T1/T2 UHF RFID readers and Odoo's native Barcode app.
+        This module provides a bridge between iData T1UHF / Zebra T1/T2 UHF RFID
+        readers and Odoo's native Barcode app (Inventory Adjustments workflow).
 
         Features:
         - Accept RFID scans (EPCs) from Android app via HTTP endpoint
-        - Server-side deduplication of rapid scans
+        - EPC resolution via rfid.tag.mapping (3 scenarios: supplier, in-house, non-standard)
+        - Server-side deduplication of rapid scans (2-second window)
         - Relay EPCs to Barcode app as synthetic barcode_scanned events
         - Support for Inventory Adjustments (cycle counts) workflow
-        - Audit logging of all scans
+        - Calibration profiles stored as rfid.calibration.profile ORM model
+        - Audit logging of all scans (stock.barcode.rfid.scan)
         - Configurable rate limiting and dedup windows
         - API key management for Android app authentication
 
-        Phase: 1-3 (in development)
         See: https://github.com/qspcgonzales-arch/IDataProject
     """,
     'author': 'IData Project',

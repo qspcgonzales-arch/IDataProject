@@ -1,6 +1,6 @@
 # IDataProject — Security Baseline
 
-**Status:** Phase 0 (Framework), implemented in Phase 2+  
+**Status:** Framework documented (Aug 19–20). Security controls are implemented progressively from Aug 31 onward as endpoints are built.  
 **Last Updated:** 2026-08-18
 
 ---
@@ -297,7 +297,7 @@ logger.info(json.dumps({
 **Mitigations:**
 - ✓ API key authentication (only authorized users can submit)
 - ✓ Session validation (EPC only accepted if active Barcode session exists)
-- ✓ Barcode Nomenclature validation (EPC must resolve to valid lot)
+- ✓ EPC validation via rfid.tag.mapping lookup (EPC must resolve to a known product mapping)
 - ✓ Audit trail (every scan logged with operator + device)
 - ✓ Rate limiting (suspicious bulk submissions detected)
 
@@ -333,7 +333,7 @@ logger.info(json.dumps({
 **Mitigations:**
 - ✓ EPC format validation (must be valid hex)
 - ✓ Session binding (only valid within active session)
-- ✓ Lot lookup requires Barcode Nomenclature match (not every hex is valid)
+- ✓ rfid.tag.mapping validation (only EPCs that resolve to a mapped product are accepted without operator review)
 - ✓ Rate limiting (slows enumeration)
 
 **Residual risk:** Low. EPCs are 24 hex chars (2^96 possible values); enumeration infeasible.
@@ -404,7 +404,7 @@ class ResConfigSettings(models.TransientModel):
 
 ---
 
-## Security Checklist (Phase 2 - Before Launch)
+## Security Checklist (Sep 2 — Before API is wired to Android)
 
 - [ ] Odoo API key generation/validation implemented
 - [ ] Rate limiting configured (100 req/min per key)
@@ -421,9 +421,9 @@ class ResConfigSettings(models.TransientModel):
 
 ## Security Review Schedule
 
-- **After Phase 2:** Internal security review (code inspection, pen test) → document findings
-- **After Phase 5:** External security audit (3rd-party firm)
-- **Phase 7+:** Continuous monitoring (SIEM alerts, vulnerability scanning)
+- **After Sep 2 auth endpoint is live:** Internal security review (code inspection, pen test) → document findings
+- **After Oct 9 security pass:** External security sign-off (3rd-party firm or senior audit)
+- **Post-pilot production rollout:** Continuous monitoring (SIEM alerts, vulnerability scanning)
 
 ---
 

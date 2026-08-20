@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extension view for ir.api.key: shows RFID device fields -->
+    <record id="ir_api_key_rfid_view_form" model="ir.ui.view">
+        <field name="name">ir.api.key.rfid.form</field>
+        <field name="model">ir.api.key</field>
+        <field name="inherit_id" ref="base.res_users_action_api_key_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="RFID Device">
+                    <field name="is_rfid_device"/>
+                    <field name="rfid_device_serial" attrs="{'invisible': [('is_rfid_device','=',False)]}"/>
+                    <field name="rfid_rate_limit" attrs="{'invisible': [('is_rfid_device','=',False)]}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!--
+        Default RFID configuration values loaded on module installation.
+        noupdate="1" means these records are only created once and will not
+        be overwritten on subsequent module upgrades.
+    -->
+
+    <!-- Default calibration profile: reasonable starting point before Step 1 calibration -->
+    <record id="rfid_calibration_profile_default" model="rfid.calibration.profile">
+        <field name="name">default</field>
+        <field name="zone">General</field>
+        <field name="description">
+            Factory default preset. Use this profile until calibration steps
+            1–7 have been completed (Sep 23–30 tracker window).
+            Replace with zone-specific profiles after calibration.
+        </field>
+        <field name="power_dbm">28</field>
+        <field name="session">1</field>
+        <field name="rssi_floor">-68</field>
+        <field name="q_value">4</field>
+    </record>
+</odoo>

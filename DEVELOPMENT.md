@@ -135,7 +135,7 @@ flake8 . --max-line-length=100
 # Commit
 git commit -m "feat(stock_barcode_rfid): add EPC to lot mapping
 
-- Implement Barcode Nomenclature rule for 96-bit EPC format
+- Implement rfid.tag.mapping lookup for 96-bit EPC format
 - Add unit tests for EPC validation and lot lookup
 - Closes #42"
 
@@ -464,7 +464,7 @@ Merge to `develop` only if CI is green.
 **Backend targets (Phase 5 load testing):**
 - POST /stock_barcode_rfid/scan: <100ms (p95) per EPC
 - Dedup check: <5ms
-- Barcode Nomenclature validation: <10ms
+- rfid.tag.mapping lookup: <10ms
 - Throughput: ≥50 EPCs/sec per session
 
 **Android targets (Phase 3):**

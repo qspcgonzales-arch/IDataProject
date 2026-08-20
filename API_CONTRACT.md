@@ -12,7 +12,7 @@ The `stock_barcode_rfid` module exposes REST endpoints for:
 1. **RFID scan ingestion** — Android app sends EPCs → Odoo processes them
 2. **Tag mapping management** — Create/update EPC→product mappings (3 Ventor scenarios)
 3. **Session management** — Create/track operator scan sessions
-4. **Calibration profile CRUD** — Android fetches and applies tuned hardware settings (Week 5+)
+4. **Calibration profile CRUD** — Android fetches and applies tuned hardware settings (Sep 21–30 calibration block)
 
 All endpoints require **authentication** (Odoo session + API key) and return JSON.
 
@@ -130,7 +130,7 @@ Authorization: Bearer <ODOO_API_KEY>
 
 **Rate Limiting:**
 - Default: 100 EPCs/min per API key per session
-- Configurable in Odoo settings (Phase 2)
+- Configurable in Odoo settings (Sep 2 — auth implementation day)
 - If exceeded: 429 response, back off exponentially (Android app built-in)
 
 ---
@@ -312,7 +312,7 @@ Authorization: Bearer <ODOO_API_KEY>
 
 ### 6. POST /stock_barcode_rfid/calibration/profiles
 
-**Purpose:** Create a calibration profile (admin only, Week 5+).
+**Purpose:** Create a calibration profile (admin only, Sep 21–30).
 
 **Request:**
 ```json
@@ -338,7 +338,7 @@ Authorization: Bearer <ODOO_API_KEY>
 ```
 
 **Behavior:**
-- Admin/warehouse manager creates profiles after Week 5 calibration testing
+- Admin/warehouse manager creates profiles after Sep 29–30 calibration steps
 - Profiles stored in `rfid.calibration.profile` ORM model
 - Android app polls for new profiles on app startup
 
@@ -383,7 +383,7 @@ Authorization: Bearer <ODOO_API_KEY>
 
 ### 9. POST /stock_barcode_rfid/tag_mapping
 
-**Purpose:** Create an EPC→product mapping (Scenario 1: supplier tags / Scenario 2: in-house encoded). Week 3+.
+**Purpose:** Create an EPC→product mapping (Scenario 1: supplier tags / Scenario 2: in-house encoded). Available from Aug 31 (Scan Bridge block).
 
 **Request:**
 ```json
@@ -414,7 +414,7 @@ Authorization: Bearer <ODOO_API_KEY>
 
 ### 10. POST /stock_barcode_rfid/write_tags
 
-**Purpose:** Batch-create EPC mappings for in-house encoding (Scenario 2). Week 3+.
+**Purpose:** Batch-create EPC mappings for in-house encoding (Scenario 2). Available from Aug 31 (Scan Bridge block).
 
 **Request:**
 ```json
@@ -445,7 +445,7 @@ Authorization: Bearer <ODOO_API_KEY>
 
 ### 11. PUT /stock_barcode_rfid/tag_mapping/{id}
 
-**Purpose:** Update a tag mapping — used for Scenario 3 (non-standard EPC) and the unknown-EPC discrepancy workflow. Week 3+.
+**Purpose:** Update a tag mapping — used for Scenario 3 (non-standard EPC) and the unknown-EPC discrepancy workflow. Available from Aug 31 (Scan Bridge block).
 
 **Request:**
 ```json
@@ -512,7 +512,7 @@ All errors return JSON with `success: false`:
 ## Backwards Compatibility
 
 **Current pilot scope (Aug–Oct):** Single-zone, single-reader, single-operator  
-**Post-pilot (Phase 7+):** Multi-reader, multi-operator concurrent scanning  
+**Post-pilot (post-pilot production rollout):** Multi-reader, multi-operator concurrent scanning  
 
 Future changes will increment API version:
 - `/v2/stock_barcode_rfid/...` for multi-reader gateway support

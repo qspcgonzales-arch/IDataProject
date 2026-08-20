@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_rfid_tag_mapping_user,rfid.tag.mapping user,model_rfid_tag_mapping,stock.group_stock_user,1,0,0,0
+access_rfid_tag_mapping_manager,rfid.tag.mapping manager,model_rfid_tag_mapping,stock.group_stock_manager,1,1,1,1
+access_stock_barcode_rfid_scan_user,stock.barcode.rfid.scan user,model_stock_barcode_rfid_scan,stock.group_stock_user,1,0,0,0
+access_stock_barcode_rfid_scan_manager,stock.barcode.rfid.scan manager,model_stock_barcode_rfid_scan,stock.group_stock_manager,1,1,1,1
+access_rfid_calibration_profile_user,rfid.calibration.profile user,model_rfid_calibration_profile,stock.group_stock_user,1,0,0,0
+access_rfid_calibration_profile_manager,rfid.calibration.profile manager,model_rfid_calibration_profile,stock.group_stock_manager,1,1,1,1
