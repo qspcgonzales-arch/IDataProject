@@ -1,5 +1,5 @@
 IDataProject — Updated Tracker (Aligned to ROADMAP_UPDATED.md)
-8-Week Validated Pilot | Weeks 1-8 (Aug 19 - Oct 13, 2026)
+8-Week Validated Pilot | Weeks 1-8 (Aug 19 - Oct 16, 2026)
 
 IMPORTANT: This replaces the original tracker. Key changes:
 - Week 1 NOW: Hardware spike (CRITICAL) + Odoo setup

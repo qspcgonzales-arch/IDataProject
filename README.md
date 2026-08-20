@@ -9,7 +9,7 @@
 ### Prerequisites
 - Docker & Docker Compose
 - Git
-- Zebra T1/T2 device (for Phase 3+)
+- iData T1UHF device (primary) or Zebra T1/T2 (fallback) — required for hardware validation (Week 1+)
 
 ### Setup
 
@@ -136,10 +136,10 @@ See [ARCHITECTURE.md](ARCHITECTURE.md#success-metrics) for details.
 ## Key Decisions
 
 - **Odoo Version:** 19.0 (latest, deployed)
-- **EPC Mapping:** EPC → stock.lot.name via Barcode Nomenclature rule
+- **EPC Mapping:** `rfid.tag.mapping` model — supports 3 scenarios: supplier tags, in-house encoded, non-standard EPC (see ARCHITECTURE.md)
 - **Encoding:** Hybrid (in-house + pre-encoded supplier tags)
-- **Workflow Priority:** Start with Inventory Adjustments (cycle counts)
-- **Hardware:** Zebra T1/T2 UHF handheld scanners + Zebra printer
+- **Workflow Priority:** Start with Inventory Adjustments (cycle counts) — Receiving/Delivery deferred post-pilot
+- **Hardware:** iData T1UHF (primary), Zebra T1/T2 (fallback) UHF handheld scanners
 - **Architecture:** Monorepo (backend + android in one repo, shared infrastructure)
 
 See [Phase 0 Decisions](IDataProject-Phase0-Decisions.md) for full rationale.
@@ -305,5 +305,5 @@ Apache 2.0 — See LICENSE file
 
 ---
 
-**Last Updated:** 2026-08-18  
-**Next Milestone:** Phase 1 (Odoo + Android "Hello World")
+**Last Updated:** 2026-08-20  
+**Next Milestone:** Week 1 — Hardware validation + Odoo foundation (Aug 24–28)

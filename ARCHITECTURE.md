@@ -1,12 +1,12 @@
 # IDataProject — System Architecture
 
-**Goal:** Replace warehouse barcode scanning with UHF RFID (Zebra T1/T2), integrated into Odoo stock_barcode. Extensible to toll/highway asset tracking.
+**Goal:** Replace warehouse barcode scanning with UHF RFID (iData T1UHF / Zebra T1/T2), integrated into Odoo stock_barcode. Extensible to toll/highway asset tracking.
 
 **Stack:** 
 - Backend: Odoo 19.0 (Python, PostgreSQL)
 - Frontend: Odoo Barcode App (OWL/JS)
-- Mobile: Zebra T1/T2 UHF handheld + custom Android app (Kotlin)
-- Deployment: Docker Compose (dev), production-grade setup (Phase 7)
+- Mobile: iData T1UHF (primary) / Zebra T1/T2 (fallback) UHF handheld + custom Android app (Kotlin)
+- Deployment: Docker Compose (dev), production-grade setup (post-pilot Phase 7)
 
 ---
 
@@ -38,22 +38,23 @@
 │  │  - Inventory Adjustments workflow                     │   │
 │  │  - Receives EPC as if barcode scan                    │   │
 │  │  - Updates stock.move_line.qty_done                   │   │
-│  │  - Validates EPC against Barcode Nomenclature rule    │   │
+│  │  - Resolves EPC via rfid.tag.mapping model            │   │
 │  └──────────────────────────────────────────────────────┘   │
 │                                                              │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │  Database (PostgreSQL)                                │   │
-│  │  - stock.lot (EPC → lot.name mapping)                │   │
+│  │  - rfid.tag.mapping (EPC → product/lot mapping)       │   │
+│  │  - stock.barcode.rfid.scan (audit log)                │   │
 │  │  - stock.quant (inventory quantities)                 │   │
-│  │  - stock.move_line (audit trail)                      │   │
-│  │  - ir.attachment (calibration profiles)               │   │
+│  │  - stock.move_line (stock audit trail)                │   │
+│  │  - rfid.calibration.profile (calibration settings)   │   │
 │  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                             ▲
                             │ HTTP/HTTPS
                             │
 ┌─────────────────────────────────────────────────────────────┐
-│             Zebra T1/T2 (Android Handheld)                  │
+│             iData T1UHF (Android Handheld)                  │
 │                                                              │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │  rfid-scanner-android (Kotlin App)                   │   │
@@ -88,22 +89,23 @@
 ## Data Flow: Inventory Adjustment Workflow
 
 1. **Operator** opens Inventory Adjustment in Odoo Barcode app
-2. **Operator** starts scanning with Zebra T1/T2
+2. **Operator** starts scanning with iData T1UHF (or Zebra T1/T2)
 3. **Android app:**
-   - Reads UHF tag (EPC) via Zebra UHF SDK
+   - Reads UHF tag (EPC) via device UHF SDK
    - Dedup locally (Map<EPC, lastSeenTimestamp>)
    - Filter by RSSI threshold (configured)
    - Batch into burst (e.g., 10 EPCs per 500ms)
-   - POST to Odoo: `POST /stock_barcode_rfid/scan` with `{barcode: EPC, session_id: ...}`
+   - POST to Odoo: `POST /stock_barcode_rfid/scan` with `{epc: EPC, session_id: ...}`
 4. **Odoo backend:**
    - Receives EPC at `/stock_barcode_rfid/scan` endpoint
    - Server-side dedup (check recent scans, ignore duplicates)
    - Throttle if burst exceeds rate limit
    - Queue if operator's session isn't active yet
+   - Looks up EPC in `rfid.tag.mapping`; returns resolved/unknown status
    - Relay EPC as synthetic barcode_scanned event via SSE/long-poll
 5. **Odoo Barcode UI:**
    - Receives barcode_scanned event
-   - Looks up EPC in stock.lot via Barcode Nomenclature rule
+   - Resolves product/lot via `rfid.tag.mapping` (not Barcode Nomenclature)
    - Increments qty_done in active stock.move_line
    - Updates UI count in real-time
 6. **Operator** finishes scanning zone, submits Inventory Adjustment
@@ -113,11 +115,17 @@
 
 ## Key Design Decisions
 
-### 1. EPC → stock.lot.name Mapping
-**Why:** Odoo's Barcode Nomenclature rules already handle barcode → lot lookup. We reuse the same pipeline.
-- Configure rule: EPC pattern (e.g., `^(.{24})$` for 96-bit hex EPC) → Rule Type = Lot/Serial Number
-- On first scan, if EPC not in stock.lot, auto-create (or manual import)
-- No custom lookup logic; leverages battle-tested Odoo validation
+### 1. EPC → Product/Lot Mapping via `rfid.tag.mapping`
+**Why:** Barcode Nomenclature alone is insufficient — it handles only one EPC-encoding scenario. The warehouse requires three distinct mapping paths depending on how tags were encoded.
+
+Three supported scenarios (Ventor reference):
+1. **Supplier tags** — EPC matches `product.barcode` directly; create mapping on first scan.
+2. **In-house encoded tags** — Your team writes the product barcode into the EPC; resolved via `rfid.tag.mapping.barcode`.
+3. **Non-standard EPC** — Proprietary supplier encoding; operator maps raw EPC to `product.serial_number` manually; future scans resolve via serial.
+
+Unknown EPCs are flagged as `status='unknown'`; the operator can self-map them via the discrepancy workflow (no tech support needed).
+
+Model: `rfid.tag.mapping` with fields `epc`, `product_id`, `lot_id`, `barcode`, `serial_number`, `encoding_type` (supplier | in_house | non_standard), timestamps, and scan count.
 
 ### 2. Server-Side Dedup + Throttle
 **Why:** Android app's local dedup is best-effort. Network retries, rapid re-scan during operator motion, or late arrivals can duplicate. Server must enforce dedup.
@@ -138,37 +146,43 @@
 - On reconnect, bulk-POST buffered EPCs with replay flag
 - Odoo dedup handles replay (same EPC in buffer gets deduplicated)
 
-### 5. Calibration Profiles as Odoo Attachments
-**Why:** Profiles (power, session, RSSI floor) are environment-specific. Store in Odoo so:
-- Operators download profiles to Android on login
+### 5. Calibration Profiles as Odoo ORM Model (`rfid.calibration.profile`)
+**Why:** Profiles (power, session, RSSI floor, Q-value) are environment-specific. Storing them as a structured ORM model (not `ir.attachment`) provides:
+- Full CRUD API endpoints for Android to fetch and apply profiles
+- Operators select profiles via a dropdown in the Android app
 - Profiles update across the fleet instantly (no manual device updates)
 - Audit trail of which profile was used for each count
 
+Fields: `name` (unique), `power_dbm`, `session`, `rssi_floor`, `q_value`, `zone`, timestamps.
+
 ---
 
-## Phases & Deliverables
+## Tracker-Aligned Milestones
 
-| Phase | Duration | Deliverable | Stability |
-|-------|----------|-------------|-----------|
-| 0 | Week 1 | Requirements locked (this doc) | — |
-| 1 | Week 1–2 | "Hello World" (EPC → Odoo lot resolution) | Alpha |
-| 2 | Week 2–3 | Odoo bridge module (POST endpoint + dedup) | Alpha |
-| 3 | Week 3–5 | Android scanner app (UHF loop + UI) | Beta |
-| 4 | Week 5–6 | Calibration profiles (power, session, RSSI) | Beta |
-| 5 | Week 6–7 | Integration tests (E2E, multi-user, failure modes) | Release Candidate |
-| 6 | Week 7–8 | Pilot/UAT (shadow-run on real zone) | Release Candidate |
-| 7 | Week 8–10 | Production rollout (zone-by-zone, monitoring) | Production |
-| 8 | Ongoing | Post-launch (weekly accuracy checks, firmware updates) | Stable |
+The tracker sheet (`TRACKER_UPDATED.txt`) is the source of truth for execution status. The implementation is organized into date-based windows rather than numbered phases. The table below maps the original phase concepts to the tracker schedule.
+
+| Tracker Window | Deliverable | Stability |
+|----------------|-------------|-----------|
+| Aug 19–20 (complete) | Requirements locked, hardware selected | — |
+| Aug 24–28 | Odoo foundation, module scaffold, Android base, SDK validation | Alpha |
+| Aug 31–Sep 10 | Odoo scan bridge (`POST /scan`, dedup, auth, live UI) | Alpha |
+| Sep 11–18 | Live RFID read loop, Android live count, smoke tests | Beta |
+| Sep 21–30 | Offline handling, calibration profiles, accuracy testing | Beta |
+| Oct 1–16 | Final calibration, E2E tests, warehouse pilot, UAT, go/no-go | Release Candidate |
+
+**Phase 7 (Production Rollout) is out of scope for this pilot project** — it is deferred to a separate project after UAT sign-off.
+
+See [ROADMAP_UPDATED.md](ROADMAP_UPDATED.md) for the full date-based tracker-aligned roadmap.
 
 ---
 
 ## Success Metrics
 
-- **Accuracy:** ≥99% in calibrated read zone (Phase 4)
-- **Speed:** 60–70% faster than barcode scanning (Phase 6 UAT measurement)
-- **Stability:** <0.1% scan loss on live operator workflow (Phase 5 load test)
-- **Uptime:** 99.5% during warehouse hours (Phase 7 monitoring)
-- **Extensibility:** Support for toll/highway asset tracking without core changes (Phase 8)
+- **Accuracy:** ≥99% in calibrated read zone (Sep–Oct calibration)
+- **Speed:** 60–70% faster than barcode scanning (Oct UAT measurement)
+- **Stability:** <0.1% scan loss on live operator workflow (Oct load test)
+- **Uptime:** 99.5% during warehouse hours (pilot monitoring)
+- **Extensibility:** Support for toll/highway asset tracking without core changes (post-pilot)
 
 ---
 
@@ -177,15 +191,15 @@
 | Aspect | Choice | Why | Trade-off |
 |--------|--------|-----|-----------|
 | Odoo Version | 19.0 | Latest, improved stock_barcode | Newer = less field battle-testing |
-| EPC Mapping | stock.lot.name | Reuse Barcode Nomenclature | Less flexible if EPC ≠ lot semantically |
+| EPC Mapping | rfid.tag.mapping model | 3-scenario approach (supplier/in-house/non-standard) | Requires explicit mapping management |
 | Dedup Strategy | Server-side + client | Resilient to network/retry | ~500ms latency (long-poll) |
 | Android Dev | Kotlin + Gradle | Type-safe, Google standard | Smaller ecosystem than Java |
 | Encoding | In-house + supplier hybrid | Flexible long-term | Must manage EPC prefix collisions |
-| Scaling | Single Odoo instance (Phase 1-6) | Simpler deployment | Bottleneck for multi-zone scaling (Phase 8) |
+| Scaling | Single Odoo instance (pilot scope) | Simpler deployment | Bottleneck for multi-zone scaling (post-pilot) |
 
 ---
 
-## Future Extensions (Phase 8+)
+## Future Extensions (Post-Pilot)
 
 - **Multi-reader gateway:** Aggregate data from multiple T1/T2 units into one stream
 - **Receiving/Delivery workflows:** High-risk, requires stock move locking
@@ -201,6 +215,6 @@
 - Warehouse Wi-Fi is stable (≥3 bars in scan zones)
 - EPC structure encodes lot identity (or manual mapping table)
 - Odoo barcode_scanned event model remains stable across 19.x patches
-- Zebra T1/T2 Android SDK is available (sourced from Zebra portal)
-- Initial single-zone pilot (scale horizontally in Phase 7)
-- No multi-warehouse federation in Phase 1 (single Odoo instance)
+- iData T1UHF (primary) or Zebra T1/T2 Android SDK is available (sourced from device vendor portal)
+- Initial single-zone pilot (scale horizontally post-pilot)
+- No multi-warehouse federation in pilot scope (single Odoo instance)
