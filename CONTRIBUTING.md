@@ -4,8 +4,8 @@ Thank you for helping build the next-generation warehouse inventory system!
 
 ## Before You Start
 
-1. **Read the architecture** — See [ARCHITECTURE.md](ARCHITECTURE.md) to understand how the system works
-2. **Understand the phase** — We're in Phase X. See README for where we are in the roadmap
+1. **Read the architecture** — See [ARCHITECTURE.md](ARCHITECTURE.md) to understand the system design
+2. **Check current status** — See [README.md](README.md#roadmap--phases) for the tracker-aligned roadmap and active milestone
 3. **Check the code standards** — See [DEVELOPMENT.md](DEVELOPMENT.md) for Python/Kotlin style guides
 
 ## Getting Started

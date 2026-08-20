@@ -93,15 +93,15 @@ IDataProject/
 ### 1. Branch Strategy
 
 ```
-main              → Production-ready (Phase 7+)
+main              → Production-ready (post-pilot Phase 7)
 ├── develop       → Integration branch (PR target)
-│   ├── feature/* → New features (Phase 1-3)
+│   ├── feature/* → New features
 │   ├── fix/*     → Bug fixes
-│   └── calibration/* → Phase 4 calibration work
-└── release/*     → Release candidates (Phase 5-6)
+│   └── calibration/* → Week 5 calibration work
+└── release/*     → Release candidates (pilot/UAT window)
 ```
 
-**Naming convention:** `feature/epc-to-lot-mapping`, `fix/dedup-race-condition`, `calibration/rssi-floor-sweep`
+**Naming convention:** `feature/epc-tag-mapping`, `fix/dedup-race-condition`, `calibration/rssi-floor-sweep`
 
 ### 2. Code Review Checklist (before PR merge)
 
@@ -438,7 +438,7 @@ POSTGRES_DB=idata_dev
 ODOO_API_URL=http://10.0.2.2:8069  # 10.0.2.2 = Android emulator's localhost
 ODOO_API_KEY=<generated-in-phase-2>
 
-# Calibration (Phase 4)
+# Calibration settings (Week 5)
 RFID_POWER_DEFAULT=30  # dBm
 RFID_SESSION_DEFAULT=0
 RFID_RSSI_FLOOR_DEFAULT=-70  # dBm

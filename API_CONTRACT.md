@@ -1,7 +1,7 @@
 # IDataProject — API Contract
 
 **Version:** 1.0.0  
-**Status:** Phase 1-2 (in development)  
+**Status:** In development (Aug 31 – Sep 10 tracker window)  
 **Base URL:** `https://<odoo-host>/stock_barcode_rfid/` (or `http://localhost:8069` for local dev)
 
 ---
@@ -10,8 +10,9 @@
 
 The `stock_barcode_rfid` module exposes REST endpoints for:
 1. **RFID scan ingestion** — Android app sends EPCs → Odoo processes them
-2. **Session management** — Create/track operator scan sessions
-3. **Calibration profile retrieval** — Android downloads tuned settings (Phase 4+)
+2. **Tag mapping management** — Create/update EPC→product mappings (3 Ventor scenarios)
+3. **Session management** — Create/track operator scan sessions
+4. **Calibration profile CRUD** — Android fetches and applies tuned hardware settings (Week 5+)
 
 All endpoints require **authentication** (Odoo session + API key) and return JSON.
 
@@ -61,17 +62,21 @@ Authorization: Bearer <ODOO_API_KEY>
 | `session_id` | string | ✓ | Barcode app session ID (link to stock.barcode_session) |
 | `rssi` | integer | ✓ | Signal strength in dBm (e.g., -65) |
 | `timestamp_ms` | integer | — | Client-side timestamp for replay ordering |
-| `device_id` | string | — | Zebra device serial, for audit trail |
+| `device_id` | string | — | Device serial, for audit trail |
 
 **Response (200 OK):**
 ```json
 {
   "success": true,
-  "scan_id": "stock.barcode.rfid_12345",
+  "scan_id": "stock.barcode.rfid.scan_12345",
+  "tag_mapping_id": 42,
+  "product_id": 101,
+  "product_name": "Widget A",
   "lot_id": 789,
   "lot_name": "LOT-2024-08-001",
   "is_duplicate": false,
-  "status": "queued",
+  "scan_status": "resolved",
+  "relay_status": "queued",
   "message": "EPC accepted, relaying to Barcode app"
 }
 ```
@@ -79,11 +84,15 @@ Authorization: Bearer <ODOO_API_KEY>
 | Field | Notes |
 |-------|-------|
 | `success` | Always true if 200 OK |
-| `scan_id` | Internal record ID for audit |
-| `lot_id` | Resolved lot.id, or null if EPC not found |
-| `lot_name` | Human-readable lot identifier |
+| `scan_id` | Internal audit record ID |
+| `tag_mapping_id` | ID of the matched `rfid.tag.mapping` record, or null if unknown |
+| `product_id` | Resolved product.id, or null if EPC unknown |
+| `product_name` | Human-readable product name, or null |
+| `lot_id` | Resolved lot.id, or null (only present when lot-tracked product) |
+| `lot_name` | Human-readable lot identifier, or null |
 | `is_duplicate` | True if this EPC was seen <2sec ago (server-side dedup) |
-| `status` | `queued` (waiting for operator to open Barcode app), `relayed` (active session), `buffered` (no session, queued for retry) |
+| `scan_status` | `resolved` (EPC mapped to product), `unknown` (no mapping found — operator must map) |
+| `relay_status` | `queued` (waiting for active session), `relayed` (session active), `buffered` (no session) |
 
 **Response (400 Bad Request):**
 ```json
@@ -114,7 +123,8 @@ Authorization: Bearer <ODOO_API_KEY>
 
 **Behavior:**
 - Server-side dedup: if EPC seen in same session <2sec, return `is_duplicate: true` but still process
-- Lot lookup: match EPC against Barcode Nomenclature rule, return lot_id or null
+- EPC lookup: resolve via `rfid.tag.mapping` model; returns `scan_status: 'unknown'` if no mapping found
+- Unknown EPC workflow: operator copies EPC, maps it via `PUT /tag_mapping/{id}`, then rescans → resolved
 - If no active Barcode app session: buffer the scan in database, don't fail
 - Relay: if session active, emit `barcode_scanned` event to trigger qty increment in UI
 
@@ -192,7 +202,7 @@ Accept: text/event-stream
 
 **Response (200 OK, streaming):**
 ```
-data: {"event": "barcode_scanned", "barcode": "1234567890ABCDEF12345678", "lot_id": 789, "is_duplicate": false}
+data: {"event": "barcode_scanned", "epc": "1234567890ABCDEF12345678", "product_id": 101, "lot_id": 789, "scan_status": "resolved", "is_duplicate": false}
 data: {"event": "session_status", "status": "active", "tag_count": 42}
 data: {"event": "error", "message": "Connection from Android app lost, buffering scans"}
 ```
@@ -230,15 +240,19 @@ data: {"event": "error", "message": "Connection from Android app lost, buffering
   "events": [
     {
       "event": "barcode_scanned",
-      "barcode": "1234567890ABCDEF12345678",
+      "epc": "1234567890ABCDEF12345678",
+      "product_id": 101,
       "lot_id": 789,
-      "scan_id": "stock.barcode.rfid_12345"
+      "scan_status": "resolved",
+      "scan_id": "stock.barcode.rfid.scan_12345"
     },
     {
       "event": "barcode_scanned",
-      "barcode": "ABCDEF1234567890ABCDEF12",
+      "epc": "ABCDEF1234567890ABCDEF12",
+      "product_id": 101,
       "lot_id": 790,
-      "scan_id": "stock.barcode.rfid_12346"
+      "scan_status": "resolved",
+      "scan_id": "stock.barcode.rfid.scan_12346"
     }
   ]
 }
@@ -291,14 +305,14 @@ Authorization: Bearer <ODOO_API_KEY>
 
 **Behavior:**
 - Returns all active profiles for the warehouse
-- Android app displays to operator for manual selection (Phase 4+)
-- Profile includes RFID hardware tuning (power, session, RSSI floor)
+- Android app displays to operator for manual selection
+- Profile includes RFID hardware tuning (power, session, RSSI floor, Q-value)
 
 ---
 
 ### 6. POST /stock_barcode_rfid/calibration/profiles
 
-**Purpose:** Create/update a calibration profile (admin/Phase 4).
+**Purpose:** Create a calibration profile (admin only, Week 5+).
 
 **Request:**
 ```json
@@ -309,6 +323,7 @@ Authorization: Bearer <ODOO_API_KEY>
   "power_dbm": 30,
   "session": 2,
   "rssi_floor": -70,
+  "q_value": 5,
   "description": "Metal shelving, high RF interference"
 }
 ```
@@ -317,15 +332,141 @@ Authorization: Bearer <ODOO_API_KEY>
 ```json
 {
   "success": true,
-  "profile_id": "calibration_profile_567",
+  "profile_id": 567,
   "message": "Profile created. Download to devices via app settings."
 }
 ```
 
 **Behavior:**
-- Admin/warehouse manager creates profiles after Phase 4 calibration testing
-- Profiles stored as Odoo attachments, versioned
+- Admin/warehouse manager creates profiles after Week 5 calibration testing
+- Profiles stored in `rfid.calibration.profile` ORM model
 - Android app polls for new profiles on app startup
+
+---
+
+### 7. PUT /stock_barcode_rfid/calibration/profiles/{id}
+
+**Purpose:** Update an existing calibration profile (admin only).
+
+**Request:**
+```json
+{
+  "power_dbm": 27,
+  "rssi_floor": -65
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "profile_id": 567,
+  "message": "Profile updated."
+}
+```
+
+---
+
+### 8. DELETE /stock_barcode_rfid/calibration/profiles/{id}
+
+**Purpose:** Remove a calibration profile (admin only).
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Profile deleted."
+}
+```
+
+---
+
+### 9. POST /stock_barcode_rfid/tag_mapping
+
+**Purpose:** Create an EPC→product mapping (Scenario 1: supplier tags / Scenario 2: in-house encoded). Week 3+.
+
+**Request:**
+```json
+{
+  "epc": "1234567890ABCDEF12345678",
+  "product_id": 101,
+  "encoding_type": "supplier"
+}
+```
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `epc` | string | ✓ | 24-char hex EPC |
+| `product_id` | integer | ✓ | Odoo product.product ID |
+| `encoding_type` | string | ✓ | `supplier`, `in_house`, or `non_standard` |
+| `lot_id` | integer | — | Optional lot linkage |
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "tag_mapping_id": 42,
+  "message": "EPC mapped to product."
+}
+```
+
+---
+
+### 10. POST /stock_barcode_rfid/write_tags
+
+**Purpose:** Batch-create EPC mappings for in-house encoding (Scenario 2). Week 3+.
+
+**Request:**
+```json
+{
+  "product_id": 101,
+  "epc_list": [
+    "1234567890ABCDEF12345678",
+    "ABCDEF1234567890ABCDEF12"
+  ]
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "written_count": 2,
+  "failed_count": 0,
+  "tag_mapping_ids": [42, 43]
+}
+```
+
+**Behavior:**
+- Product must have a barcode set in Odoo; returns 400 if missing
+- Creates one `rfid.tag.mapping` record per EPC
+
+---
+
+### 11. PUT /stock_barcode_rfid/tag_mapping/{id}
+
+**Purpose:** Update a tag mapping — used for Scenario 3 (non-standard EPC) and the unknown-EPC discrepancy workflow. Week 3+.
+
+**Request:**
+```json
+{
+  "serial_number": "SN-PROPRIETARY-ABC",
+  "encoding_type": "non_standard"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "tag_mapping_id": 42,
+  "message": "Mapping updated. Rescan tag to resolve."
+}
+```
+
+**Behavior:**
+- Operator maps an unknown EPC to a product serial number
+- After this call, rescanning the same EPC returns `scan_status: 'resolved'`
 
 ---
 
@@ -370,10 +511,10 @@ All errors return JSON with `success: false`:
 
 ## Backwards Compatibility
 
-**Phase 1-2:** Single-zone, single-reader, single-operator  
-**Phase 5+:** Multi-reader, multi-operator concurrent scanning  
+**Current pilot scope (Aug–Oct):** Single-zone, single-reader, single-operator  
+**Post-pilot (Phase 7+):** Multi-reader, multi-operator concurrent scanning  
 
-Future changes (Phase 8+) will increment API version:
+Future changes will increment API version:
 - `/v2/stock_barcode_rfid/...` for multi-reader gateway support
 - Legacy v1 endpoints remain functional for 2+ releases (graceful deprecation)
 
