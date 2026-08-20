@@ -1,0 +1,275 @@
+Date,Planned Task / Activity,What I Actually Did,Expected Output / Deliverable,Status,% Progress,Actual Issues / Blockers,Action Taken,Next Action,OJT Learning / Notes,Supervisor / Remarks,Weekend Handling
+
+WEEK 1 - HARDWARE VALIDATION + ODOO FOUNDATION
+
+2026-08-19,Set up VS Code + clone IDataProject repo,,Repo in C:\IDataProject,Completed,100%,,Clone completed,Next: Python setup,Repository cloned successfully,Approved,No work
+
+2026-08-19,Install Python 3.10 + create venv,,venv at backend\venv\,Completed,100%,,Python 3.10.11 installed,Next: Docker setup,Python + pip verified,Approved,No work
+
+2026-08-20,Verify Git installation + Docker status,,Git v2.55 working; Docker installing,In Progress,50%,Docker Desktop installation in progress,Running winget installer,Wait for Docker completion,Docker install initiated via winget,In progress,No work
+
+2026-08-21,Acquire iData T1UHF SDK + documentation,,SDK folder + complete docs available,Not Started,0%,SDK not yet acquired - CRITICAL BLOCKER,Contact iData/Zebra for SDK portal access,Receive SDK + test on device,This is the critical path item - must complete before proceeding,Waiting on user,No work
+
+2026-08-21,Test T1UHF EPC reads (raw format; not barcode),,Confirmed: Device reads raw 96-bit EPC,Not Started,0%,Hardware not yet acquired,Once SDK received: Test basic EPC reads,Proceed if successful; pivot if not,Critical validation - determines entire architecture,Waiting,No work
+
+2026-08-21,Verify Android 13+ SDK compatibility,,Confirmed Android 13+ is supported,Not Started,0%,SDK compatibility unknown,Check SDK min version + Android docs,Proceed if confirmed,Android version mismatch = blocker,Waiting,No work
+
+2026-08-21,Test RSSI and Power/Session/Q-value control,,Device supports all calibration controls,Not Started,0%,Calibration features unknown,Verify in SDK docs and test on device,Proceed if all available,Calibration control needed for Phase 4,Waiting,No work
+
+2026-08-22,Install Docker Desktop + verify docker ps works,,Docker running; docker ps returns containers,In Progress,50%,Docker installer waiting for admin elevation,Retry winget install after elevation,Test docker ps command,Docker essential for Odoo dev environment,In progress,No work
+
+2026-08-22,Start Docker Compose (Odoo 19 + PostgreSQL + Redis),,Odoo running at localhost:8069,Not Started,0%,Blocked on Docker completion,Once Docker running: docker-compose up -d,Verify all containers healthy,Docker Compose was pre-configured; just needs startup,Blocked,No work
+
+2026-08-22,Verify Odoo admin login (admin/admin),,Odoo accessible; login successful,Not Started,0%,Blocked on Docker/Odoo startup,Wait for Docker → docker-compose logs,Test login in browser,Login credentials in .env file,Blocked,No work
+
+2026-08-23,Create .env file from template,,Configuration ready for development,Completed,100%,None,Copied .env.example → .env; updated passwords,Next: Module scaffold,Safe dev passwords used (not production),Done,No work
+
+2026-08-23,Create backend module scaffold (directory structure),,Directory structure ready; __init__.py created,Not Started,0%,Waiting for Odoo running,Once Odoo up: mkdir models/ controllers/ views/ tests/,Verify imports work in Odoo shell,Module structure mirrors existing addons,Waiting,No work
+
+2026-08-23,Design data models (rfid.tag.mapping; stock.barcode.rfid.scan; rfid.calibration.profile),,Model design document with constraints + relationships,Not Started,0%,None - design phase,Create design doc mapping all fields + constraints,Review with senior dev before coding,rfid.tag.mapping supports all 3 Ventor scenarios,Design in progress,No work
+
+2026-08-24,Create test fixtures (warehouse; product; lot; user; inventory),,10 test products created; 10 test EPCs ready,Not Started,0%,Waiting for Odoo,In conftest.py: define sample_warehouse; sample_product; etc.,Use fixtures in Week 2 tests,Fixtures enable rapid testing,Waiting,No work
+
+2026-08-24,Document hardware validation results,,Go/No-Go decision on T1UHF,Not Started,0%,Hardware not tested,Once Week 1 tests complete: Document findings,If blocker: Escalate immediately,Critical gate for proceeding past Week 1,Pending,No work
+
+WEEK 1 SUMMARY,All Week 1 deliverables on track,,"✓ Hardware validated (or blocker ID'd)
+✓ Odoo 19 running
+✓ Module scaffold ready
+✓ Models designed
+✓ Test data created",On Track,50%,Hardware SDK acquisition (CRITICAL),Docker installing in parallel,Proceed to Week 2 if hardware validates,CRITICAL: Hardware validation = blocker on everything else,Pending,Saturday 2026-08-24 / Sunday 2026-08-25 = NO WORK
+
+WEEK 2 - CORE RFID MODULE (POST /scan + DEDUP)
+
+2026-08-26,Implement rfid.tag.mapping model (all 3 Ventor scenarios),,models/rfid_tag_mapping.py complete,Not Started,0%,None - code-only task,Create model with: epc; product_id; lot_id; barcode; serial_number; encoding_type,Write unit tests for constraints,Model is foundation for all EPC resolution,On schedule,No work
+
+2026-08-26,Implement stock.barcode.rfid.scan audit model,,models/stock_barcode_rfid_scan.py complete,Not Started,0%,None,Create audit log model with: epc; rssi; tag_mapping_fk; status; timestamps,Test model creation + constraints,Audit trail needed for compliance,On schedule,No work
+
+2026-08-26,Create database migrations,,Migrations running; tables created,Not Started,0%,None,Run: odoo shell → migrations load,Verify table structure in psql,Should auto-run on module install,On schedule,No work
+
+2026-08-26,Add database indices (EPC; inventory_id),,Indices created; queries optimized,Not Started,0%,None,Add UNIQUE INDEX on epc; INDEX on inventory_id,Test query performance,Indices prevent dedup race conditions,On schedule,No work
+
+2026-08-27,Implement POST /stock_barcode_rfid/scan endpoint,,Endpoint accepts EPC + returns JSON,Not Started,0%,None,Create controllers/main.py with @http.route decorator,Test with curl,Single endpoint is MVP,On schedule,No work
+
+2026-08-27,Add EPC format validation (96-bit hex; 24-char),,Validation working; errors returned,Not Started,0%,None,Implement _validate_epc() static method,Unit test: invalid EPC raises ValidationError,Prevents downstream errors,On schedule,No work
+
+2026-08-27,Implement 2-second server-side dedup logic,,Dedup window enforced; 2-sec scans marked duplicate,Not Started,0%,None,Query: SELECT count(*) WHERE epc = ? AND created_at > now()-2sec,Test with rapid double-scans,Prevents duplicate inventory updates,On schedule,No work
+
+2026-08-28,Write unit tests (EPC validation; dedup logic; unknown EPC),,tests/test_epc_validation.py with ≥5 tests,Not Started,0%,None,pytest tests/test_epc_validation.py -v,All tests PASSED,Test coverage foundation,On schedule,No work
+
+2026-08-28,Write integration test (POST /scan → response),,tests/test_rfid_scan_e2e.py complete,Not Started,0%,None,Integration test: send EPC → get JSON response → verify fields,Coverage ≥80%,End-to-end validation,On schedule,No work
+
+2026-08-28,Test with curl (manual API testing),,Postman collection created + tested,Not Started,0%,None,Create: tests/postman_collection.json,Import into Postman; test endpoints,Documentation for Android team,On schedule,No work
+
+2026-08-29,Add auth validation (API key check),,@auth='bearer' enforced; 401 for invalid,Not Started,0%,None,Implement auth decorator in controller,Test: missing key → 401; invalid key → 401,Security critical,On schedule,No work
+
+2026-08-29,Add error handling (400; 401; 429; 500),,All HTTP error codes return proper JSON,Not Started,0%,None,Add try/except blocks + specific error responses,Test each error path,User experience + debugging,On schedule,No work
+
+2026-08-29,Log all scans to audit trail,,_logger.info() working in all paths,Not Started,0%,None,Add: _logger.info(f"RFID Scan: EPC={epc}..."),Verify logs in docker-compose logs odoo,Audit trail for compliance,On schedule,No work
+
+WEEK 2 SUMMARY,Core RFID module complete and tested,,"✓ POST /scan endpoint working
+✓ Dedup logic tested (2-sec)
+✓ EPC validation passing
+✓ Scans recorded in audit log
+✓ API documented (Postman)
+✓ All tests passing",On Track,0%,None,Proceed to Week 3,Start Week 3 tag scenarios,Backend API is foundation for Android app,Pending,Saturday 2026-08-31 / Sunday 2026-09-01 = NO WORK
+
+WEEK 3 - VENTOR MAPPING SCENARIOS + TAG ENROLLMENT
+
+2026-09-02,Scenario 1: Create endpoint POST /stock_barcode_rfid/tag_mapping,,Supplier tags resolve correctly,Not Started,0%,None,Implement mapping endpoint; Request: {epc; product_id; encoding_type:"supplier"},Test with supplier tag,Covers Ventor Scenario 1,On schedule,No work
+
+2026-09-02,Scenario 1: Implement supplier tag mapping logic,,Supplier tags match via product.barcode,Not Started,0%,None,EPC → lookup product.barcode → resolve,test_ventor_scenario_1.py passing,Supplier provides tags + barcode,On schedule,No work
+
+2026-09-02,Scenario 1: Test supplier tag scan workflow,,Scan existing supplier tag → status='resolved',Not Started,0%,None,Test with real tagged product,Verify product_id in response,Real warehouse workflow,On schedule,No work
+
+2026-09-03,Scenario 2: Create endpoint POST /stock_barcode_rfid/write_tags,,Tag enrollment endpoint ready; batch create,Not Started,0%,None,New endpoint: {product_id; epc_list[]},Request: write 5 tags in one call,Enables in-house tag encoding,On schedule,No work
+
+2026-09-03,Scenario 2: Implement tag writing (batch create mappings),,Multiple EPCs mapped in single call,Not Started,0%,None,Create rfid.tag.mapping for each EPC in list,Response: {written_count; failed_count},Efficient bulk operation,On schedule,No work
+
+2026-09-03,Scenario 2: Add validation (product must have barcode),,Error if barcode missing,Not Started,0%,None,Check product.barcode before writing,Clear error: "Product must have barcode",Prevents orphaned tags,On schedule,No work
+
+2026-09-03,Scenario 2: Test write 5 tags to product,,All 5 EPCs mapped correctly; scans resolve,Not Started,0%,None,POST /write_tags; verify all in rfid.tag.mapping,Rescan each → status='resolved',Self-service tag encoding,On schedule,No work
+
+2026-09-04,Scenario 3: Create endpoint PUT /stock_barcode_rfid/tag_mapping/{id},,Manual mapping endpoint ready,Not Started,0%,None,Update endpoint: {serial_number; encoding_type:"non_standard"},Allow operator to add serial number,Handles non-decodable EPCs,On schedule,No work
+
+2026-09-04,Scenario 3: Implement serial_number field update,,Future scans resolve via serial,Not Started,0%,None,Product.serial_number = raw EPC,Scanner looks up serial instead of barcode,Ventor Scenario 3,On schedule,No work
+
+2026-09-04,Scenario 3: Test manual map + rescan,,Unknown EPC → manual map → rescan resolves,Not Started,0%,None,Scan unknown → gets EPC → operator copies to serial → rescan,status='resolved' on rescan,Operator self-service,On schedule,No work
+
+2026-09-05,Unknown EPC Handling: Mark as status='unknown',,Unknown EPCs identified in response,Not Started,0%,None,If not found in rfid.tag.mapping: status='unknown',Test with non-existent EPC,Self-documenting status field,On schedule,No work
+
+2026-09-05,Unknown EPC Handling: UI discrepancy view,,Operator sees list of unknown EPCs,Not Started,0%,None,Create view: /stock_barcode_rfid/discrepancies,Show EPC + product name (if available) + copy button,Operator workflow,On schedule,No work
+
+2026-09-05,Unknown EPC Handling: Operator maps + rescans,,Full discrepancy workflow tested,Not Started,0%,None,Scan → unknown → operator maps serial → rescan,Verify all steps work end-to-end,3-step self-healing workflow,On schedule,No work
+
+2026-09-06,All 3 Ventor scenarios tested end-to-end,,All tests passing; comprehensive test suite,Not Started,0%,None,pytest tests/ -v --tb=short,Coverage report generated,Foundation for Android integration,On schedule,No work
+
+2026-09-06,Update API_CONTRACT.md with actual behavior,,API contract reflects all 3 scenarios,Not Started,0%,None,Document all POST/PUT/GET endpoints + response examples,Update for Android team,Specification for Android development,On schedule,No work
+
+WEEK 3 SUMMARY,Ventor mapping scenarios implemented,,"✓ Scenario 1 (supplier) tested
+✓ Scenario 2 (in-house) tested
+✓ Scenario 3 (non-standard) tested
+✓ Unknown EPC workflow working
+✓ Operator can self-map unknowns
+✓ All paths validated",On Track,0%,None,Proceed to Week 4,Start Android app,Backend complete; ready for Android integration,Pending,Saturday 2026-09-07 / Sunday 2026-09-08 = NO WORK
+
+WEEK 4 - ANDROID SCANNER APP (PHASE 3)
+
+2026-09-09,Zebra UHF Integration: Create ZebraUHFReader.kt,,android/.../ZebraUHFReader.kt complete,Not Started,0%,None,Implement class: Initialize SDK; start inventory; EPC listener,Test on device: 10+ raw EPCs read,Foundation for scanning,On schedule,No work
+
+2026-09-09,Implement EPC event listener + RSSI capture,,Listener captures EPC + RSSI from device,Not Started,0%,None,SetEventListener: rawEpc + rssi params,Verify values in logcat,Real-time scanning,On schedule,No work
+
+2026-09-09,Add client-side dedup (1-second window),,Local dedup using ConcurrentHashMap,Not Started,0%,None,Store: Map<EPC; timestamp>; skip if within 1 sec,Prevent duplicate POSTs,Reduce backend load,On schedule,No work
+
+2026-09-09,Test: Raw EPC reads on test device,,10+ successful EPC reads logged,Not Started,0%,None,Run app; scan tags; verify logcat,All EPCs captured correctly,Device integration confirmed,On schedule,No work
+
+2026-09-10,Create OdooClient.kt (HTTP client),,android/.../OdooClient.kt complete,Not Started,0%,None,Retrofit + OkHttp setup: POST to /scan endpoint,TLS configured; API key in header,Network layer,On schedule,No work
+
+2026-09-10,Implement Retrofit/OkHttp configuration,,HTTP client configured with TLS,Not Started,0%,None,Set base URL; interceptor for Auth header,Test: POST /scan returns 200,Production-ready networking,On schedule,No work
+
+2026-09-10,Add offline queue to local SQLite,,android/.../OfflineQueue.kt complete,Not Started,0%,None,Room DB: Store pending scans with created_at,Query pending on reconnect,Handles network loss,On schedule,No work
+
+2026-09-10,Implement retry-on-reconnect logic,,Syncs pending scans when network returns,Not Started,0%,None,ConnectivityManager listener; batch POST when reconnected,Verify: offline queue → sync → cleared,Transparent to operator,On schedule,No work
+
+2026-09-11,Create ScanScreen.kt composable,,android/.../ui/ScanScreen.kt complete,Not Started,0%,None,Jetpack Compose: Input inventory ID; display scan count; last EPC,UI responsive + clear,User-facing interface,On schedule,No work
+
+2026-09-11,Add real-time scan count display,,Counter updates per EPC received,Not Started,0%,None,State: scannedCount; emit per EPC,Show: "Scans: 47"  +  "Last: ABC123...",Operator feedback,On schedule,No work
+
+2026-09-11,Add Start/Stop scanning buttons,,UI controls working,Not Started,0%,None,Button: startScanning() / stopScanning(),Verify Zebra reader starts/stops,Operator control,On schedule,No work
+
+2026-09-11,Add manual sync button (offline queue),,Operator can force sync,Not Started,0%,None,Button: syncOfflineQueue(); show status,Queue clears after successful sync,On-demand sync,On schedule,No work
+
+2026-09-12,Android Unit Tests: ZebraUHFReader dedup,,test_zebra_dedup.kt; 2 same EPCs within 1 sec → dedup,Not Started,0%,None,Unit test: send same EPC twice rapidly; verify skip,Test passing,Dedup validation,On schedule,No work
+
+2026-09-12,Android Unit Tests: OdooClient request format,,test_odoo_client.kt; JSON structure correct,Not Started,0%,None,Mock Retrofit; verify request body + headers,Test passing,API contract validation,On schedule,No work
+
+2026-09-12,Android Integration Test: Scan → POST → response,,test_e2e_scan_post.kt,Not Started,0%,None,Mock backend; verify full workflow (scan → POST → response received),Test passing,End-to-end validation,On schedule,No work
+
+2026-09-13,Android Integration Test: Offline queue → sync,,test_offline_sync.kt,Not Started,0%,None,Simulate offline; queue scans; reconnect; verify sync,All scans recovered; queue cleared,Offline handling validated,On schedule,No work
+
+WEEK 4 SUMMARY,Android app complete and tested,,"✓ Zebra UHF reading EPCs
+✓ App compiles + runs
+✓ POST /scan working from Android
+✓ Dedup on Android working
+✓ Offline queue + sync working
+✓ UI shows real-time counts",On Track,0%,None,Proceed to Week 5,Start calibration + offline,Backend + Android integrated,Pending,Saturday 2026-09-14 / Sunday 2026-09-15 = NO WORK
+
+WEEK 5 - CALIBRATION + OFFLINE HANDLING
+
+2026-09-16,Create rfid_calibration_profile model,,models/rfid_calibration_profile.py complete,Not Started,0%,None,Model: name; power_dbm (10-30); session (0-3); rssi_floor; q_value; zone,Migrations running; table created,Tuning foundation,On schedule,No work
+
+2026-09-16,Add validation + unique constraints,,Profile name unique,Not Started,0%,None,Constraint: unique(name); error if duplicate,Test: create duplicate → ValidationError,Data integrity,On schedule,No work
+
+2026-09-17,Implement GET calibration profiles endpoint,,List all profiles; used by Android,Not Started,0%,None,GET /stock_barcode_rfid/calibration/profiles → JSON array,Android fetches on startup,Configuration distribution,On schedule,No work
+
+2026-09-17,Implement POST calibration profiles endpoint,,Create new profile,Not Started,0%,None,POST /calibration/profiles; validate power range (10-30 dBm),Test: create profile → ID returned,CRUD operations,On schedule,No work
+
+2026-09-17,Implement PUT calibration profiles endpoint,,Update existing profile,Not Started,0%,None,PUT /calibration/profiles/{id}; update any field,Test: change power → verified,Edit operations,On schedule,No work
+
+2026-09-17,Implement DELETE calibration profiles endpoint,,Delete profile,Not Started,0%,None,DELETE /calibration/profiles/{id}; soft delete if needed,Test: delete → not returned in GET,Cleanup operations,On schedule,No work
+
+2026-09-18,Test: CRUD operations on profiles,,All endpoints tested; test_calibration_crud.py passing,Not Started,0%,None,pytest tests/test_calibration_crud.py -v,Full coverage,API validation,On schedule,No work
+
+2026-09-18,Android: Fetch profiles on startup,,Profiles list downloaded,Not Started,0%,None,OdooClient.getCalibrationProfiles(); store locally,Verify in logs,Configuration sync,On schedule,No work
+
+2026-09-18,Android: Create UI profile selector (dropdown),,Operator picks profile from UI,Not Started,0%,None,Compose: DropdownMenu; populate from fetched profiles,Test: select profile → stores ID,User interface,On schedule,No work
+
+2026-09-19,Android: Send power/session to Zebra SDK,,Zebra reader responds to tuning params,Not Started,0%,None,ZebraUHFReader.applyProfile(power; session; q_value),Power changes visible in RSSI values,Hardware tuning,On schedule,No work
+
+2026-09-19,Test: Change power via UI → verify in device,,Power/session control working,Not Started,0%,None,UI: select profile → change power dBm → scan tags → RSSI shifts,Calibration validated,Real-world testing,On schedule,No work
+
+2026-09-19,Create stock_barcode_rfid_offline_queue model,,models/offline_queue.py complete,Not Started,0%,None,Model: epc; inventory_id; rssi; status (pending/synced/failed),Migrations running,Offline queue foundation,On schedule,No work
+
+2026-09-19,Implement sync logic (batch POST pending scans),,Fetch pending; POST to backend; mark synced,Not Started,0%,None,Query pending; POST /stock_barcode_rfid/scan (batch or loop); mark synced,Test: queue fills offline; syncs on reconnect,Transparent sync,On schedule,No work
+
+2026-09-20,Test: Queue fills when offline; syncs on reconnect,,Scans stored locally; recovered after reconnect,Not Started,0%,None,Simulate: disconnect WiFi → scan 5 tags → queue fills → reconnect → sync verifies,No data loss,Reliability critical,On schedule,No work
+
+2026-09-20,Create E2E test (full workflow),,tests/test_e2e_complete.py passing,Not Started,0%,None,Scan → backend → audit → calibration applied,Coverage: all components integrated,System validation,On schedule,No work
+
+2026-09-20,Test: Offline scenario end-to-end,,Full offline + sync cycle validated,Not Started,0%,None,Comprehensive test: offline → queue → reconnect → sync → verification,All scans recovered; timestamps correct,Production readiness,On schedule,No work
+
+WEEK 5 SUMMARY,Calibration + Offline complete,,"✓ Profiles stored + queryable
+✓ API endpoints working
+✓ Android applies profiles
+✓ Power/session tunable via UI
+✓ Offline queue implemented
+✓ Sync on reconnect working
+✓ E2E test passing",On Track,0%,None,Proceed to Week 6,Start warehouse pilot,Backend + Android complete; ready for field testing,Pending,Saturday 2026-09-21 / Sunday 2026-09-22 = NO WORK
+
+WEEKS 6-8 - WAREHOUSE PILOT + UAT (INTENSIVE)
+
+2026-09-23,Prepare pilot warehouse: Tag 20-50 products,,Physical tags + Odoo entries ready,Not Started,0%,None,Print tags; encode with EPCs; add to products in Odoo,Verify tags in system,Warehouse readiness,On schedule,No work
+
+2026-09-23,Create 2-3 calibration profiles for zones,,Zone A / Zone B / Zone C profiles,Not Started,0%,None,Define 3 profiles: different power/RSSI for each zone,Profiles created + stored,Zone-specific tuning,On schedule,No work
+
+2026-09-23,Create 5 test inventory adjustment templates,,Ready-to-run adjustments; one per zone,Not Started,0%,None,New stock.inventory records; staged for pilot,Staged in Odoo,Repeatable testing,On schedule,No work
+
+2026-09-24,Operator training session (4 hours),,Operators trained on app + workflow,Not Started,0%,None,Hands-on: scan tags; handle discrepancies; apply adjustments,Feedback collected,Knowledge transfer,On schedule,No work
+
+2026-09-24,Run 2 practice cycles,,Bugs identified; feedback collected,Not Started,0%,None,Full workflow: select adjustment → scan products → apply,Issues logged,De-risking,On schedule,No work
+
+2026-09-25,Run 5 inventory adjustments (Pilot Week 1),,Audit log complete for each,Not Started,0%,None,5 full cycles; document scan counts; times; discrepancies,Success/failure data collected,Real-world validation,On schedule,No work
+
+2026-09-25,Measure tag read accuracy,,Accuracy ≥99%,Not Started,0%,None,Compare manual count vs. RFID count; identify misreads,Accuracy report,Critical metric,On schedule,No work
+
+2026-09-25,Measure time vs. barcode scanning,,60-70% faster target,Not Started,0%,None,Time each adjustment; compare to barcode baseline,Speed report,ROI metric,On schedule,No work
+
+2026-09-26,Document discrepancies found; operator maps unknowns,,Unknown EPCs handled; mapped,Not Started,0%,None,List unknowns; operator adds serial → rescan; verify resolved,Discrepancy workflow validated,Self-service mapping,On schedule,No work
+
+2026-09-26,Collect operator feedback,,Notes on usability; what was hard; what was slow,Not Started,0%,None,Surveys + informal interviews,Feedback summary,UX insight,On schedule,No work
+
+2026-09-27,Fix high-priority bugs from Week 1,,Bug fixes deployed; re-tested,Not Started,0%,None,Prioritize issues; hot-fix; verify; redeploy,All fixes tested,Iterative improvement,On schedule,No work
+
+2026-09-27,Measure scan loss,,<0.1% target,Not Started,0%,None,Count failed POSTs; calculate loss percentage,Loss report,Reliability metric,On schedule,No work
+
+2026-09-30,Run 5 more inventory adjustments (Pilot Week 2),,Verify fixes from Week 1; all workflows stable,Not Started,0%,None,5 more cycles; same measurements,Stability data,Regression validation,On schedule,No work
+
+2026-10-01,Run 4-hour continuous scanning test,,Measure uptime + stability; 99.5% target,Not Started,0%,None,Nonstop scanning; monitor errors; measure uptime,Uptime report,Endurance test,On schedule,No work
+
+2026-10-01,Test offline handling (disconnect WiFi mid-adjustment),,Scans queue + sync on reconnect; no data loss,Not Started,0%,None,Kill WiFi; continue scanning; reconnect; verify sync,Recovery test; all scans recovered,Resilience validation,On schedule,No work
+
+2026-10-02,Verify all scans in audit trail,,100% of scans logged,Not Started,0%,None,Database check: row count matches expected,Traceability complete,Compliance check,On schedule,No work
+
+2026-10-02,Validate success metrics; create pilot report,,Signed-off by warehouse manager,Not Started,0%,None,Compile: accuracy; speed; uptime; scan loss; operator feedback,Report generated,Pilot complete,On schedule,No work
+
+2026-10-03,Security audit (API keys; auth; TLS),,OWASP checklist passed,Not Started,0%,None,Penetration test; verify API key handling; TLS pinning,Security report,Production readiness,On schedule,No work
+
+2026-10-03,Performance audit (latency; throughput),,<100ms p95; ≥50 EPCs/sec,Not Started,0%,None,Load test; measure response times + throughput,Performance report,Scalability check,On schedule,No work
+
+2026-10-04,Update documentation (ARCHITECTURE; API_CONTRACT; README),,Docs reflect actual behavior; ready for handoff,Not Started,0%,None,Update all docs; add Ventor scenarios; calibration section,Documentation final,Knowledge transfer,On schedule,No work
+
+2026-10-04,Create operator runbook,,Step-by-step procedures; troubleshooting guide,Not Started,0%,None,Write: How to start; handle errors; common issues + fixes,Runbook complete,Operator support,On schedule,No work
+
+2026-10-04,Sign-off from stakeholders,,Pilot report approved; production readiness confirmed,Not Started,0%,None,Present findings; get sign-off; document approval,Final approval,Project gate,On schedule,No work
+
+WEEKS 6-8 SUMMARY,Pilot completed successfully,,"✓ Accuracy ≥99%
+✓ Speed 60-70% faster
+✓ Scan loss <0.1%
+✓ Uptime 99.5% (4-hour)
+✓ Operators trained
+✓ All bugs fixed
+✓ Audit trail verified
+✓ Production readiness documented",Complete,100%,None,Pilot signed off; Phase 7 planning begins,Production rollout (Phase 7; separate project),Validated RFID workflow; ready for production,Approved,Saturday 2026-10-05 / Sunday 2026-10-06 = NO WORK
+
+PHASE 7 OUT OF SCOPE
+
+2026-10-09,Production Rollout Phase 7 (NOT IN PILOT),,Zone-by-zone deployment,Not Started,0%,None,See ROADMAP_UPDATED.md Phase 7 section,Separate project planning,Post-pilot work,TBD,No work
+
+2026-10-16,Receiving Workflow Phase 7+ (NOT IN PILOT),,PO validation + receiving operations,Not Started,0%,None,Defer to Phase 7; not in pilot scope,Future enhancement,Extended scope,TBD,No work
+
+END OF TRACKER
+
+NOTES FOR EXCEL IMPORT:
+
+1. All "Not Started" items have 0% progress
+2. All "Completed" items (Aug 19-20) have 100% progress
+3. "In Progress" items (Docker installation) have 50% progress
+4. Weekend dates (Saturday/Sunday) show "No work" in Weekend Handling column
+5. CRITICAL BLOCKER: Hardware acquisition (Week 1 Day 1) must be resolved to proceed
+6. Each week has a summary row with deliverables + status
+7. Dependencies are noted in "Next Action" column
+
+COPY THIS CONTENT INTO EXCEL:
+- Each row = separate task
+- Keep column order: Date | Task | What I Did | Expected Output | Status | % | Blockers | Actions | Next | Learning | Remarks | Weekend
+- Use status values: Completed / In Progress / Not Started / Blocked
+- Use % Progress: 0 / 25 / 50 / 75 / 100
