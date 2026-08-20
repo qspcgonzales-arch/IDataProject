@@ -29,10 +29,11 @@ Date | Task | Status | % | Deliverable | Notes
 2026-08-22 | Start Docker Compose (Odoo 19 + PostgreSQL) | BLOCKED | 0% | Odoo at localhost:8069 | Blocked on Docker installation
 2026-08-22 | Verify Odoo admin login (admin/admin) | NOT STARTED | 0% | Login successful | Depends on Docker
 2026-08-23 | Create .env file from template | COMPLETED | 100% | .env configured | Done, using safe dev passwords
-2026-08-23 | Create backend module scaffold | NOT STARTED | 0% | Directory structure ready | Models imported but empty
+2026-08-23 | Create backend module scaffold | COMPLETED | 100% | Directory structure ready | Scaffold verified for stock_barcode_rfid; added stock_barcode_rfid_calibration, backend/odoo.conf, and backend/scripts/init-db.sql
 2026-08-23 | Design data models (rfid.tag.mapping, stock.barcode.rfid.scan, rfid.calibration.profile) | NOT STARTED | 0% | Model diagrams + constraints listed | Design doc ready for implementation
 
-2026-08-24 | Create test fixtures (warehouse, product, lot, user, inventory) | NOT STARTED | 0% | 10 test products + 10 test EPCs | conftest.py with fixtures
+2026-08-24 | Create test fixtures (warehouse, product, lot, user, inventory) | COMPLETED | 100% | 10 test products + 10 test EPCs | Added backend/tests/data/rfid_test_dataset.json and updated backend/tests/conftest.py fixture loaders/factories
+2026-08-24 | Confirm Phase 0 decisions log | COMPLETED | 100% | Phase 0 decisions documented | Added IDataProject-Phase0-Decisions.md with scope, hardware, EPC strategy, and Aug 24 deliverables
 2026-08-24 | Document hardware validation results | NOT STARTED | 0% | Hardware validation report | Go/no-go decision
 
 **Week 1 Summary:**
