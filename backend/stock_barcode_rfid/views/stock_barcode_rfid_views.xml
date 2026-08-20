@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         rfid.tag.mapping — List + Form views
+    ============================================================ -->
+    <record id="rfid_tag_mapping_view_list" model="ir.ui.view">
+        <field name="name">rfid.tag.mapping.list</field>
+        <field name="model">rfid.tag.mapping</field>
+        <field name="arch" type="xml">
+            <list string="RFID Tag Mappings">
+                <field name="epc"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="encoding_type"/>
+                <field name="last_scanned"/>
+                <field name="scan_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="rfid_tag_mapping_view_form" model="ir.ui.view">
+        <field name="name">rfid.tag.mapping.form</field>
+        <field name="model">rfid.tag.mapping</field>
+        <field name="arch" type="xml">
+            <form string="RFID Tag Mapping">
+                <sheet>
+                    <group>
+                        <field name="epc"/>
+                        <field name="product_id"/>
+                        <field name="lot_id"/>
+                        <field name="encoding_type"/>
+                        <field name="barcode"/>
+                        <field name="serial_number"/>
+                    </group>
+                    <group string="Audit">
+                        <field name="last_scanned" readonly="1"/>
+                        <field name="scan_count" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="rfid_tag_mapping_action" model="ir.actions.act_window">
+        <field name="name">RFID Tag Mappings</field>
+        <field name="res_model">rfid.tag.mapping</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ============================================================
+         stock.barcode.rfid.scan — List + Form views
+    ============================================================ -->
+    <record id="stock_barcode_rfid_scan_view_list" model="ir.ui.view">
+        <field name="name">stock.barcode.rfid.scan.list</field>
+        <field name="model">stock.barcode.rfid.scan</field>
+        <field name="arch" type="xml">
+            <list string="RFID Scan Audit Log" default_order="create_date desc">
+                <field name="create_date" string="Scanned At"/>
+                <field name="epc"/>
+                <field name="session_id"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="scan_status"/>
+                <field name="is_duplicate"/>
+                <field name="rssi"/>
+                <field name="operator_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="stock_barcode_rfid_scan_view_form" model="ir.ui.view">
+        <field name="name">stock.barcode.rfid.scan.form</field>
+        <field name="model">stock.barcode.rfid.scan</field>
+        <field name="arch" type="xml">
+            <form string="RFID Scan Record">
+                <sheet>
+                    <group>
+                        <field name="epc"/>
+                        <field name="session_id"/>
+                        <field name="device_id"/>
+                        <field name="rssi"/>
+                        <field name="operator_id"/>
+                    </group>
+                    <group string="Resolution">
+                        <field name="scan_status"/>
+                        <field name="tag_mapping_id"/>
+                        <field name="product_id"/>
+                        <field name="lot_id"/>
+                    </group>
+                    <group string="Dedup &amp; Relay">
+                        <field name="is_duplicate"/>
+                        <field name="relay_status"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="stock_barcode_rfid_scan_action" model="ir.actions.act_window">
+        <field name="name">RFID Scan Audit Log</field>
+        <field name="res_model">stock.barcode.rfid.scan</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ============================================================
+         rfid.calibration.profile — List + Form views
+    ============================================================ -->
+    <record id="rfid_calibration_profile_view_list" model="ir.ui.view">
+        <field name="name">rfid.calibration.profile.list</field>
+        <field name="model">rfid.calibration.profile</field>
+        <field name="arch" type="xml">
+            <list string="Calibration Profiles">
+                <field name="name"/>
+                <field name="zone"/>
+                <field name="power_dbm"/>
+                <field name="session"/>
+                <field name="rssi_floor"/>
+                <field name="q_value"/>
+                <field name="accuracy_pct" string="Accuracy %"/>
+                <field name="validated_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="rfid_calibration_profile_view_form" model="ir.ui.view">
+        <field name="name">rfid.calibration.profile.form</field>
+        <field name="model">rfid.calibration.profile</field>
+        <field name="arch" type="xml">
+            <form string="RFID Calibration Profile">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="zone"/>
+                        <field name="description"/>
+                    </group>
+                    <group string="Hardware Parameters">
+                        <field name="power_dbm"/>
+                        <field name="session"/>
+                        <field name="rssi_floor"/>
+                        <field name="q_value"/>
+                    </group>
+                    <group string="Validation">
+                        <field name="validated_date"/>
+                        <field name="accuracy_pct"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="rfid_calibration_profile_action" model="ir.actions.act_window">
+        <field name="name">RFID Calibration Profiles</field>
+        <field name="res_model">rfid.calibration.profile</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ============================================================
+         Menu items (under Inventory)
+    ============================================================ -->
+    <menuitem
+        id="menu_rfid_root"
+        name="RFID"
+        parent="stock.menu_stock_root"
+        sequence="99"/>
+
+    <menuitem
+        id="menu_rfid_tag_mappings"
+        name="Tag Mappings"
+        parent="menu_rfid_root"
+        action="rfid_tag_mapping_action"
+        sequence="10"/>
+
+    <menuitem
+        id="menu_rfid_scan_log"
+        name="Scan Audit Log"
+        parent="menu_rfid_root"
+        action="stock_barcode_rfid_scan_action"
+        sequence="20"/>
+
+    <menuitem
+        id="menu_rfid_calibration_profiles"
+        name="Calibration Profiles"
+        parent="menu_rfid_root"
+        action="rfid_calibration_profile_action"
+        sequence="30"/>
+</odoo>

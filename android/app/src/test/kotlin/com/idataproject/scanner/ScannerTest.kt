@@ -5,8 +5,8 @@ import org.junit.Test
 
 
 /**
- * Unit tests for Zebra UHF reader integration.
- * Scaffold for Phase 1 Android development.
+ * Unit tests for iData T1UHF / Zebra UHF reader integration.
+ * Scaffold — implement once SDK is sourced (Gate 1, Aug 21+).
  */
 class ZebraUHFReaderTest {
 

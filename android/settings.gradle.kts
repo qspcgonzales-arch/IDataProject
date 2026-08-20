@@ -11,10 +11,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven {
-            // Zebra repositories (if needed)
-            url = uri("https://jcenter.bintray.com")
-        }
+        // iData T1UHF SDK (local AAR) — uncomment once SDK is sourced (Gate 1)
+        // flatDir { dirs("app/libs") }
     }
 
     versionCatalogs {

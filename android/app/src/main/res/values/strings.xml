@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IDataProject RFID Scanner</string>
+    <string name="scan_button_label">Start Scanning</string>
+    <string name="stop_button_label">Stop Scanning</string>
+    <string name="tag_count_label">Tags scanned: %1$d</string>
+    <string name="connection_status_connected">Connected to Odoo</string>
+    <string name="connection_status_disconnected">Disconnected — buffering scans</string>
+    <string name="unknown_epc_notice">Unknown EPC — map in Odoo to resolve</string>
+</resources>

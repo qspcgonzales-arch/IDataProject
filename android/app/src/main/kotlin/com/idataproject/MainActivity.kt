@@ -17,11 +17,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 /**
  * Main activity for IDataProject RFID Scanner app.
  *
- * Phases:
- * - Phase 1: Scaffold (this file)
- * - Phase 2: Connect to Odoo API
- * - Phase 3: Integrate Zebra UHF reader
- * - Phase 4+: Implement full scanning and calibration UI
+ * Implementation is scheduled across the following tracker windows:
+ * - Aug 24–28 (Foundation): Android project structure + SDK validation
+ * - Aug 31–Sep 10 (Scan Bridge): Retrofit/OkHttp API client, API key storage
+ * - Sep 11–18 (Live RFID): iData T1UHF SDK inventory loop, live count UI
+ * - Sep 21–30 (Calibration): Calibration profile selector, offline queue
  */
 class MainActivity : AppCompatActivity() {
 
@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
 
 /**
  * Main composable for the app.
- * TODO: Replace with actual UI implementation
+ * TODO (Aug 31): Replace with real scan UI once Odoo bridge is live.
  */
 @Composable
 fun IDataProjectApp(modifier: Modifier = Modifier) {
@@ -47,12 +47,12 @@ fun IDataProjectApp(modifier: Modifier = Modifier) {
             .padding(16.dp)
     ) {
         Text("IDataProject — RFID Scanner")
-        Text("Phase 1: Scaffold (in development)")
+        Text("Scaffold ready — implementation begins Aug 24")
         Text("")
         Text("TODO:")
-        Text("• Phase 2: Odoo RFID bridge module")
-        Text("• Phase 3: Zebra UHF reader integration")
-        Text("• Phase 4: Calibration profiles")
-        Text("• Phase 5+: Full scanner UI")
+        Text("• Aug 24–28: Verify SDK + Odoo environment")
+        Text("• Aug 31–Sep 10: Odoo bridge API client")
+        Text("• Sep 11–18: iData T1UHF inventory loop")
+        Text("• Sep 21–30: Calibration profiles")
     }
 }
