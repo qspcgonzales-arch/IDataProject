@@ -264,6 +264,8 @@ class RfidScanController(http.Controller):
     )
     def create_calibration_profile(self, **kwargs):
         """Create a calibration profile (admin only)."""
+        if not request.env.user.has_group('stock.group_stock_manager'):
+            return _error('Forbidden', 'Only stock managers can create calibration profiles.', status=403)
         try:
             body = json.loads(request.httprequest.data or '{}')
         except (json.JSONDecodeError, ValueError):
@@ -298,6 +300,8 @@ class RfidScanController(http.Controller):
     )
     def update_calibration_profile(self, profile_id, **kwargs):
         """Update an existing calibration profile (admin only)."""
+        if not request.env.user.has_group('stock.group_stock_manager'):
+            return _error('Forbidden', 'Only stock managers can update calibration profiles.', status=403)
         profile = request.env['rfid.calibration.profile'].sudo().browse(profile_id)
         if not profile.exists():
             return _error('Profile not found', f'Profile ID {profile_id} does not exist.', status=404)
@@ -319,6 +323,8 @@ class RfidScanController(http.Controller):
     )
     def delete_calibration_profile(self, profile_id, **kwargs):
         """Delete a calibration profile (admin only)."""
+        if not request.env.user.has_group('stock.group_stock_manager'):
+            return _error('Forbidden', 'Only stock managers can delete calibration profiles.', status=403)
         profile = request.env['rfid.calibration.profile'].sudo().browse(profile_id)
         if not profile.exists():
             return _error('Profile not found', f'Profile ID {profile_id} does not exist.', status=404)
