@@ -90,7 +90,7 @@ Start here based on your role:
 - **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** — Common issues & fixes
 
 ### **External Reference**
-- **[Spider's RFID — RFID Odoo Integration Best Practices](https://www.spidersrfid.com/en/articles/rfid-odoo-integration-best-practices)** — Additional implementation guidance and integration best practices
+- **[Spider's RFID — Odoo Integration Best Practices](https://www.spidersrfid.com/en/articles/rfid-odoo-integration-best-practices)** — Additional implementation guidance for RFID/Odoo integration best practices
 
 ---
 
