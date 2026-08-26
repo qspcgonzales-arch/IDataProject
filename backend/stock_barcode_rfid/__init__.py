@@ -2,15 +2,11 @@
 """
 Stock Barcode RFID Module Initialization
 
-This module provides RFID scanning integration for Odoo's Barcode application.
-Zebra T1/T2 UHF readers send EPCs to the Odoo backend, which relays them to
-the Barcode UI as synthetic barcode scans.
+Custom RFID scanning integration for Odoo 19 Community, built for the
+iData T1UHF handheld exclusively. See __manifest__.py for architecture
+notes; models/ and controllers/ are populated incrementally per the
+Rev. 2 roadmap (rfid-odoo-roadmap-MASTER.docx), Phase 1-2.
 """
 
 from . import models
 from . import controllers
-
-__all__ = [
-    'models',
-    'controllers',
-]
