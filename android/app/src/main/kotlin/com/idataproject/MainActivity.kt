@@ -3,7 +3,6 @@ package com.idataproject
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,10 +16,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 /**
  * Main activity for IDataProject RFID Scanner app.
  *
+ * Integration path (2026-08-26): direct XML-RPC/JSON-RPC calls to
+ * Odoo, matching EPCs against stock.lot.name (Desktop 1's "Option 3",
+ * see rfid-odoo-roadmap-MASTER.docx Section 9 addendum). EPCs with no
+ * matching stock.lot are logged via UnresolvedScanStore instead of
+ * being silently dropped, since this integration path has no
+ * server-side status='unknown' model to fall back on.
+ *
  * Phases:
  * - Phase 1: Scaffold (this file)
- * - Phase 2: Connect to Odoo API
- * - Phase 3: Integrate Zebra UHF reader
+ * - Phase 2: Connect to Odoo API directly (XML-RPC/JSON-RPC)
+ * - Phase 3: Integrate iData T1UHF reader (hardware SDK)
  * - Phase 4+: Implement full scanning and calibration UI
  */
 class MainActivity : AppCompatActivity() {
@@ -50,9 +56,9 @@ fun IDataProjectApp(modifier: Modifier = Modifier) {
         Text("Phase 1: Scaffold (in development)")
         Text("")
         Text("TODO:")
-        Text("• Phase 2: Odoo RFID bridge module")
-        Text("• Phase 3: Zebra UHF reader integration")
+        Text("• Phase 2: Direct XML-RPC/JSON-RPC bridge to Odoo")
+        Text("• Phase 3: iData T1UHF reader integration")
         Text("• Phase 4: Calibration profiles")
-        Text("• Phase 5+: Full scanner UI")
+        Text("• Phase 5+: Full scanner UI + unresolved-EPC review screen")
     }
 }

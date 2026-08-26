@@ -5,10 +5,10 @@ import org.junit.Test
 
 
 /**
- * Unit tests for Zebra UHF reader integration.
+ * Unit tests for iData T1UHF reader integration.
  * Scaffold for Phase 1 Android development.
  */
-class ZebraUHFReaderTest {
+class UhfReaderTest {
 
     @Test
     fun testValidEPCFormat() {
