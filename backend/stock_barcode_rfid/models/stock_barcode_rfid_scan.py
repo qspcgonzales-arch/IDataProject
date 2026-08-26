@@ -71,6 +71,7 @@ class StockBarcodeRfidScan(models.Model):
     location_id = fields.Many2one(
         'stock.location',
         string='Location',
+        index=True,
         help='The stock location this scan session is counting against. '
              'Odoo 14+ (including v19) does inventory adjustments '
              'directly against stock.quant/stock.location; there is no '

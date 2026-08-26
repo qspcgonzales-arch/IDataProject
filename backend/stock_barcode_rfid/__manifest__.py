@@ -33,7 +33,9 @@
         'base',
         'stock',
     ],
-    'data': [],
+    'data': [
+        'security/ir.model.access.csv',
+    ],
     'external_dependencies': {
         'python': [],
     },
